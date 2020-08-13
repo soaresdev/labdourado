@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Lot;
 use App\Operator;
-use App\Patient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use JamesDordoy\LaravelVueDatatable\Http\Resources\DataTableCollectionResource;
 
-class PatientController extends Controller
+class LotController extends Controller
 {
     public function index(Request $request)
     {
@@ -17,13 +18,10 @@ class PatientController extends Controller
         $orderBy = $request->input('dir');
         $searchValue = $request->input('search');
         $operator = $request->input('operator');
-        $query = Patient::eloquentQuery($sortBy, $orderBy, $searchValue, [
+        $query = Lot::eloquentQuery($sortBy, $orderBy, $searchValue, [
             "operators"
         ]);
         $query->where("operators.id", !empty($operator) ? $operator : Operator::all(['id', 'name'])->first()->id);
-        if(!empty($searchValue)){
-            $query->orWhere("patient_operators.wallet_number", "LIKE", "%$searchValue%");
-        }
         $data = $query->paginate($length);
         return new DataTableCollectionResource($data);
     }
@@ -31,13 +29,11 @@ class PatientController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->only([
-            'name',
-            'operators',
-            'cns'
+            'number',
+            'operators'
         ]), [
-            'name' => 'required',
-            'operators' => 'required|array',
-            'cns' => 'nullable'
+            'number' => 'required',
+            'operators' => 'required|array'
         ]);
         if ($validator->fails()) {
             return $this->message->error(config('constants.messages.error.validation'))
@@ -46,19 +42,15 @@ class PatientController extends Controller
                 ->getResponse();
         }
         try {
-            $patient = Patient::create([
-                'name' => $validator->validated()['name'],
-                'cns' => $validator->validated()['cns']
+            $lot = Lot::create([
+                'number' => $validator->validated()['number']
             ]);
             $operators = [];
             foreach($validator->validated()['operators'] as $operator) {
-                $operators[$operator['operator_id']] = [
-                    'wallet_number' => $operator['wallet_number'],
-                    'wallet_expiration' => $operator['wallet_expiration'],
-                ];
+                array_push($operators, $operator['operator_id']);
             }
-            $patient->operators()->sync($operators);
-            return $this->message->success('Paciente' . config('constants.messages.success.created'))
+            $lot->operators()->sync($operators);
+            return $this->message->success('Lote' . config('constants.messages.success.created'))
                 ->setStatus(201)
                 ->getResponse();
         } catch (\Exception $e) {
@@ -70,13 +62,13 @@ class PatientController extends Controller
     public function update(Request $request, int $id)
     {
         $validator = Validator::make($request->only([
-            'name',
+            'number',
             'operators',
-            'cns'
+            'closed_at'
         ]), [
-            'name' => 'required',
+            'number' => 'required',
             'operators' => 'required|array',
-            'cns' => 'nullable'
+            'closed_at' => 'nullable'
         ]);
         if ($validator->fails()) {
             return $this->message->error(config('constants.messages.error.validation'))
@@ -85,20 +77,17 @@ class PatientController extends Controller
                 ->getResponse();
         }
         try {
-            $patient = Patient::findOrFail($id);
-            $patient->update([
-                'name' => $validator->validated()['name'],
-                'cns' => $validator->validated()['cns']
+            $lot = Lot::findOrFail($id);
+            $lot->update([
+                'number' => $validator->validated()['number'],
+                'closed_at' => !empty($validator->validated()['closed_at']) ? $validator->validated()['closed_at'] : null
             ]);
             $operators = [];
             foreach($validator->validated()['operators'] as $operator) {
-                $operators[$operator['operator_id']] = [
-                    'wallet_number' => $operator['wallet_number'],
-                    'wallet_expiration' => $operator['wallet_expiration'],
-                ];
+                array_push($operators, $operator['operator_id']);
             }
-            $patient->operators()->sync($operators);
-            return $this->message->success('Paciente' . config('constants.messages.success.updated'))
+            $lot->operators()->sync($operators);
+            return $this->message->success('Lote' . config('constants.messages.success.updated'))
                 ->setStatus(200)
                 ->getResponse();
         } catch (\Exception $e) {
@@ -110,9 +99,9 @@ class PatientController extends Controller
     public function delete(Request $request, int $id)
     {
         try {
-            $patient = Patient::findOrFail($id);
-            $patient->delete();
-            return $this->message->success('Paciente' . config('constants.messages.success.deleted'))
+            $lot = Lot::findOrFail($id);
+            $lot->delete();
+            return $this->message->success('Lote' . config('constants.messages.success.deleted'))
                 ->setStatus(200)
                 ->getResponse();
         } catch (\Exception $e) {

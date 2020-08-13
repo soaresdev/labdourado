@@ -2,6 +2,7 @@
 <div>
         <v-dialog
       v-model="dialog"
+      width="500"
     >
         <dialog-lot v-if="dialog" :operators="operators" :lot="lot" @action="close"></dialog-lot>
     </v-dialog>
@@ -44,12 +45,11 @@
 
 <script>
 import ActionsTable from '../../assets/js/components/ActionsTable'
-import DialogPatient from './DialogPatient'
+import DialogLot from './DialogLot'
 export default {
     name: 'IndexLot',
     components: {
-        DialogPatient,
-        ActionsTable
+        DialogLot
     },
     data() {
         return {
@@ -60,15 +60,9 @@ export default {
             columns: [
                 {
                     label: 'ID',
-                    name: 'id',
-                    columnName: 'lots.id',
+                    name: 'number',
+                    columnName: 'lots.number',
                     orderable: true,
-                },
-                {
-                    label: 'Qtd. de Guias',
-                    name: 'sadts.count',
-                    orderable: true,
-                    searchable: false
                 },
                 {
                 label: '',

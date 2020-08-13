@@ -52,6 +52,12 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
             Route::put('/{id}/update', 'OperatorController@update')->name('operators.update');
             Route::delete('/{id}/delete', 'OperatorController@delete')->name('operators.delete');
         });
+        Route::prefix('/lots')->group(function(){
+            Route::get('/', 'LotController@index')->name('lots.index');
+            Route::post('/store', 'LotController@store')->name('lots.store');
+            Route::put('/{id}/update', 'LotController@update')->name('lots.update');
+            Route::delete('/{id}/delete', 'LotController@delete')->name('lots.delete');
+        });
     });
     Route::get('/{view?}', 'HomeController')->where('view', '(.*)')->name('home');
 });

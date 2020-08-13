@@ -5,21 +5,22 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use JamesDordoy\LaravelVueDatatable\Traits\LaravelVueDatatableTrait;
-
-class Operator extends Model
+class Lot extends Model
 {
-    use SoftDeletes;
-    use LaravelVueDatatableTrait;
+    use SoftDeletes, LaravelVueDatatableTrait;
+
+    protected $with = ['operators'];
+
     protected $dataTableColumns = [
         'id' => [
+            'searchable' => false,
+            'orderable' => false,
+        ],
+        'number' => [
             'searchable' => true,
             'orderable' => true,
         ],
-        'name' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-        'ans' => [
+        'closed_at' => [
             'searchable' => true,
             'orderable' => true,
         ],
@@ -27,13 +28,13 @@ class Operator extends Model
 
     protected $dataTableRelationships = [
         "belongsToMany" => [
-            "patients" => [
-                "model" => Patient::class,
+            "operators" => [
+                "model" => Operator::class,
                 "pivot" => [
-                    "table_name" => "patient_operators",
+                    "table_name" => "lot_operators",
                     "primary_key" => "id",
-                    "foreign_key" => "patient_id",
-                    "local_key" => "operator_id",
+                    "foreign_key" => "operator_id",
+                    "local_key" => "lot_id",
                 ],
                 "columns" => [
                     'name' => [
@@ -51,7 +52,7 @@ class Operator extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'ans',
+        'number', 'closed_at'
     ];
 
     /**
@@ -60,27 +61,14 @@ class Operator extends Model
      * @var array
      */
     protected $casts = [
+        'closed_at' => 'datetime:d/m/Y',
         'created_at' => 'datetime:d/m/Y',
         'updated_at' => 'datetime:d/m/Y',
     ];
 
-    public function lots()
+    public function operators()
     {
-        return $this->belongsToMany(Lot::class, 'lot_operators')->as('lot_operator');
+        return $this->belongsToMany(Operator::class, 'lot_operators')->as('lot_operator');
     }
 
-    public function doctors()
-    {
-        return $this->belongsToMany(Doctor::class, 'doctor_operators')->as('doctor_operator')->withPivot('doctor_operator_number');
-    }
-
-    public function patients()
-    {
-        return $this->belongsToMany(Patient::class, 'patient_operators')->using(PatientOperator::class)
-            ->as('patient_operator')
-            ->withPivot([
-                'wallet_number',
-                'wallet_expiration'
-            ]);
-    }
 }
