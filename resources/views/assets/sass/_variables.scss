@@ -1,0 +1,81 @@
+// Typography
+$font-family: 'Nunito',
+sans-serif;
+/** COLOR's DEFAULT **/
+$color-primary: #1a1f26;
+$color-secondary: #282f3a;
+
+/** LOGIN - LEFT */
+$dash-login-left-width: 40%;
+$dash-login-left-background: $color-secondary;
+$dash-login-left-box-background: $dash-login-left-background;
+$dash-login-left-input-background: $dash-login-left-background;
+$dash-login-left-color: #FFFFFF;
+
+/** LOGIN - RIGHT */
+$dash-login-right-width: 60%;
+$dash-login-right-background: url('../images/logo.png') center/cover no-repeat;
+
+/**
+FONT SYSTEM
+ */
+$font-size-min: 0.8em;
+$font-size-small: 0.875em;
+$font-size-normal: 1em;
+$font-size-medium: 1.2em;
+$font-size-large: 1.4em;
+$font-size-max: 2em;
+
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-strong: 600;
+$font-weight-bold: 700;
+$font-weight-black: 900;
+
+/**
+COLOR SYSTEM
+ */
+$color-white: #FFFFFF;
+$color-gray-light: #CCCCCC;
+$color-gray-medium: #555555;
+$color-gray: #999999;
+$color-gray-dark: #333333;
+$color-black: #000000;
+
+$color-green: #36BA9B;
+$color-blue: #39AED9;
+$color-yellow: #F5B946;
+$color-red: #D94352;
+$color-orange: #F4645F;
+
+$gradient-hover-type: 'darken'; // darken || lighten
+$gradient-hover-amount: 8%;
+
+$theme-colors: () !default;
+$theme-colors: map_merge(("green": $color-green,
+        "blue": $color-blue,
+        "yellow": $color-yellow,
+        "red": $color-red,
+        "orange": $color-orange), $theme-colors);
+
+.gradient {
+    background-size: 200% auto;
+    transition-duration: 0.5s;
+
+    &:hover {
+        background-position: right center;
+    }
+}
+
+@each $color,
+$value in $theme-colors {
+    .gradient-#{$color} {
+        @if $gradient-hover-type=="darken" {
+            background-image: linear-gradient(to right, $value 0%, darken($value, $gradient-hover-amount) 50%, $value 100%);
+        }
+
+        @else {
+            background-image: linear-gradient(to right, $value 0%, lighten($value, $gradient-hover-amount) 50%, $value 100%);
+        }
+    }
+}
