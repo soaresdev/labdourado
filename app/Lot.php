@@ -71,4 +71,9 @@ class Lot extends Model
         return $this->belongsToMany(Operator::class, 'lot_operators')->as('lot_operator');
     }
 
+    public function guides()
+    {
+        return $this->hasMany(GuideSadt::class);
+    }
+
 }

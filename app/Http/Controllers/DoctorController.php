@@ -70,6 +70,7 @@ class DoctorController extends Controller
             $doctor->operators()->sync($operators);
             return $this->message->success('Médico' . config('constants.messages.success.created'))
                 ->setStatus(201)
+                ->setData([$doctor])
                 ->getResponse();
         } catch (\Exception $e) {
             return $this->message->error()

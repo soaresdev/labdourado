@@ -101,9 +101,7 @@ export default {
         close(data) {
             this.dialog = false;
             this.operator = null;
-            if(data == 'save'){
-                this.$refs.table.getData();
-            }
+            this.$refs.table.getData();
         },
         delete(data) {
             this.request().delete(`/operators/${data.id}/delete`).then(response => {

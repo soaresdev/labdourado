@@ -21,9 +21,20 @@ class LotController extends Controller
         $query = Lot::eloquentQuery($sortBy, $orderBy, $searchValue, [
             "operators"
         ]);
+        $query->withCount('guides');
         $query->where("operators.id", !empty($operator) ? $operator : Operator::all(['id', 'name'])->first()->id);
         $data = $query->paginate($length);
         return new DataTableCollectionResource($data);
+    }
+
+    public function indexData(Request $request)
+    {
+        return $this->message->info()->setData(Lot::with([
+            'operators',
+            'operators.doctors',
+            'operators.patients',
+            'operators.providers',
+        ])->where('lots.closed_at', null)->get()->all())->getResponse();
     }
 
     public function store(Request $request)
@@ -46,7 +57,7 @@ class LotController extends Controller
                 'number' => $validator->validated()['number']
             ]);
             $operators = [];
-            foreach($validator->validated()['operators'] as $operator) {
+            foreach ($validator->validated()['operators'] as $operator) {
                 array_push($operators, $operator['operator_id']);
             }
             $lot->operators()->sync($operators);
@@ -83,7 +94,7 @@ class LotController extends Controller
                 'closed_at' => !empty($validator->validated()['closed_at']) ? $validator->validated()['closed_at'] : null
             ]);
             $operators = [];
-            foreach($validator->validated()['operators'] as $operator) {
+            foreach ($validator->validated()['operators'] as $operator) {
                 array_push($operators, $operator['operator_id']);
             }
             $lot->operators()->sync($operators);

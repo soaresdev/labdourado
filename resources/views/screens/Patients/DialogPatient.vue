@@ -116,8 +116,8 @@ export default {
     methods: {
         verifyAction() {
             if(this.patient.id){
-                this.name = this.patient.name,
-                this.cns = this.patient.cns,
+                this.name = this.patient.name
+                this.cns = this.patient.cns
                 this.action = 'update'
             } else {
                 this.action = 'store'
@@ -131,7 +131,13 @@ export default {
                     operators: this.patient_operators,
                     cns: this.cns,
                 }).then(response => {
-                    this.$emit('action')
+                    this.$emit('action', {
+                        id: response.data.data[0].id,
+                        name: response.data.data[0].name,
+                        operators: this.patient_operators,
+                        patient_operator: this.patient_operators[0],
+                        cns: response.data.data[0].cns
+                    })
                 }).catch(err => {
                     if(err.response.data.errors) {
                         this.errors = err.response.data.errors;

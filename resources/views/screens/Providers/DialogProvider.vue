@@ -31,7 +31,38 @@
           </v-container>
         </v-card-text>
 
-        <v-divider></v-divider>
+          <v-divider></v-divider>
+          <v-btn color="primary" @click="dialog = true">Vincular operadora</v-btn>
+          <v-simple-table
+              fixed-header
+              height="200"
+          >
+              <template v-slot:default>
+                  <thead>
+                  <tr>
+                      <th class="text-left">Operadora</th>
+                      <th class="text-left">Código na operadora</th>
+                      <th class="text-left">Editar</th>
+                      <th class="text-left">Excluir</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-for="item in provider_operators" :key="item.provider_operator_number">
+                      <td>{{ item.operator }}</td>
+                      <td>{{ item.provider_operator_number }}</td>
+                      <td><v-icon @click="open(item)">mdi-pencil</v-icon></td>
+                      <td><v-icon @click="remove(item)">mdi-delete</v-icon></td>
+                  </tr>
+                  </tbody>
+              </template>
+          </v-simple-table>
+          <v-dialog
+              v-model="dialog"
+              width="800"
+          >
+              <dialog-provider-operator v-if="dialog" :operators="operators" :operators_provider="provider_operators" :provider_operator="provider_operator" @action="save"></dialog-provider-operator>
+          </v-dialog>
+          <v-divider></v-divider>
 
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -43,19 +74,37 @@
 </template>
 
 <script>
+import DialogProviderOperator from "./DialogProviderOperator";
 export default {
     name: 'dialog-provider',
+    components: {
+        DialogProviderOperator
+    },
     props: {
         provider: {
             type: Object,
             default: () => ({})
+        },
+        operators: {
+            type: Array,
+            default: () => ([])
+        }
+    },
+    computed: {
+        provider_operators() {
+            return this.provider.operators.map(pv_op => {
+                pv_op.provider_operator.operator = pv_op.name;
+                return pv_op.provider_operator;
+            })
         }
     },
     data() {
         return {
+            dialog: false,
             name: '',
             cnes: '',
             action: 'store',
+            provider_operator: {},
             errors: []
         }
     },
@@ -65,8 +114,8 @@ export default {
     methods: {
         verifyAction() {
             if(this.provider){
-                this.name = this.provider.name,
-                this.cnes = this.provider.cnes
+                this.name = this.provider.name;
+                this.cnes = this.provider.cnes;
                 this.action = 'update'
             } else {
                 this.action = 'store'
@@ -77,7 +126,8 @@ export default {
             if(this.action == 'store') {
                 this.request().post('/providers/store', {
                     name: this.name,
-                    cnes: this.cnes
+                    cnes: this.cnes,
+                    operators: this.provider_operators
                 }).then(response => {
                     this.$emit('action', 'save')
                 }).catch(err => {
@@ -88,7 +138,8 @@ export default {
             } else {
                 this.request().put(`/providers/${this.provider.id}/update`, {
                     name: this.name,
-                    cnes: this.cnes
+                    cnes: this.cnes,
+                    operators: this.provider_operators
                 }).then(response => {
                     this.$emit('action', 'save')
                 }).catch(err => {
@@ -97,6 +148,37 @@ export default {
                     }
                 });
             }
+        },
+        save(data) {
+            if(data){
+                if(data.action == 'store') {
+                    this.provider.operators.push({
+                        name: data.operator.text,
+                        provider_operator: {
+                            operator_id: data.operator.value,
+                            provider_operator_number: data.provider_operator_number,
+                            provider_id: this.provider.id
+                        }
+                    })
+                } else if (data.action == 'update') {
+                    this.provider.operators.map(op => {
+                        if(op.provider_operator.operator_id == data.operator.value){
+                            op.provider_operator.provider_operator_number = data.provider_operator_number;
+                        }
+                        return op;
+                    })
+                }
+            } else {
+                this.provider_operator = {};
+            }
+            this.dialog = false;
+        },
+        open(data) {
+            this.provider_operator = data;
+            this.dialog = true;
+        },
+        remove(data) {
+            this.provider.operators.splice(this.provider.operators.findIndex(pv_op => pv_op.provider_operator.provider_operator_number == data.provider_operator_number), 1);
         }
     }
 }

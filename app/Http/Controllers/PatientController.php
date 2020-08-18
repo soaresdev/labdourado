@@ -60,6 +60,7 @@ class PatientController extends Controller
             $patient->operators()->sync($operators);
             return $this->message->success('Paciente' . config('constants.messages.success.created'))
                 ->setStatus(201)
+                ->setData([$patient])
                 ->getResponse();
         } catch (\Exception $e) {
             return $this->message->error()

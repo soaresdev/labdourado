@@ -65,6 +65,11 @@ export default {
                     orderable: true,
                 },
                 {
+                    label: 'Qtd. de Guias',
+                    name: 'lots.guides_count',
+                    searchable: false
+                },
+                {
                 label: '',
                 name: 'Editar',
                 classes: {

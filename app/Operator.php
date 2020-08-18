@@ -74,6 +74,11 @@ class Operator extends Model
         return $this->belongsToMany(Doctor::class, 'doctor_operators')->as('doctor_operator')->withPivot('doctor_operator_number');
     }
 
+    public function providers()
+    {
+        return $this->belongsToMany(Provider::class, 'provider_operators')->as('provider_operator')->withPivot('provider_operator_number');
+    }
+
     public function patients()
     {
         return $this->belongsToMany(Patient::class, 'patient_operators')->using(PatientOperator::class)

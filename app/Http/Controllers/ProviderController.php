@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Operator;
 use App\Provider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -16,21 +17,36 @@ class ProviderController extends Controller
         $orderBy = $request->input('dir');
         $searchValue = $request->input('search');
 
-        $query = Provider::eloquentQuery($sortBy, $orderBy, $searchValue);
-
+        $operator = $request->input('operator');
+        $query = Provider::eloquentQuery($sortBy, $orderBy, $searchValue, [
+            "operators"
+        ]);
+        $query->where("operators.id", isset($operator) ? $operator : Operator::all(['id', 'name'])->first()->id);
+        if(!empty($searchValue)){
+            $query->orWhere("provider_operators.provider_operator_number", "LIKE", "%$searchValue%");
+        }
         $data = $query->paginate($length);
-
         return new DataTableCollectionResource($data);
+    }
+
+    public function indexData(Request $request)
+    {
+        $operator = $request->input('operator');
+        return $this->message->info()->setData(Provider::whereHas('operators', function ($query) use ($operator) {
+            $query->where('provider_operators.operator_id', $operator);
+        })->get()->all())->getResponse();
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->only([
             'name',
-            'cnes'
+            'cnes',
+            'operators'
         ]), [
             'name' => 'required',
             'cnes' => 'required',
+            'operators' => 'required|array'
         ]);
         if ($validator->fails()) {
             return $this->message->error(config('constants.messages.error.validation'))
@@ -39,9 +55,20 @@ class ProviderController extends Controller
                 ->getResponse();
         }
         try {
-            Provider::create($validator->validated());
+            $provider = Provider::create([
+                'name' => $validator->validated()['name'],
+                'cnes' => $validator->validated()['cnes']
+            ]);
+            $operators = [];
+            foreach($validator->validated()['operators'] as $operator) {
+                $operators[$operator['operator_id']] = [
+                    'provider_operator_number' => $operator['provider_operator_number']
+                ];
+            }
+            $provider->operators()->sync($operators);
             return $this->message->success('Prestador' . config('constants.messages.success.created'))
                 ->setStatus(201)
+                ->setData([$provider])
                 ->getResponse();
         } catch (\Exception $e) {
             return $this->message->error()
@@ -53,10 +80,12 @@ class ProviderController extends Controller
     {
         $validator = Validator::make($request->only([
             'name',
-            'cnes'
+            'cnes',
+            'operators'
         ]), [
             'name' => 'required',
             'cnes' => 'required',
+            'operators' => 'required|array'
         ]);
         if ($validator->fails()) {
             return $this->message->error(config('constants.messages.error.validation'))
@@ -66,7 +95,17 @@ class ProviderController extends Controller
         }
         try {
             $provider = Provider::findOrFail($id);
-            $provider->update($validator->validated());
+            $provider->update([
+                'name' => $validator->validated()['name'],
+                'cnes' => $validator->validated()['cnes']
+            ]);
+            $operators = [];
+            foreach($validator->validated()['operators'] as $operator) {
+                $operators[$operator['operator_id']] = [
+                    'provider_operator_number' => $operator['provider_operator_number']
+                ];
+            }
+            $provider->operators()->sync($operators);
             return $this->message->success('Prestador' . config('constants.messages.success.updated'))
                 ->setStatus(200)
                 ->getResponse();

@@ -29,6 +29,7 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
         });
         Route::prefix('/providers')->group(function(){
             Route::get('/', 'ProviderController@index')->name('providers.index');
+            Route::get('/select', 'ProviderController@indexData')->name('providers.indexData');
             Route::post('/store', 'ProviderController@store')->name('providers.store');
             Route::put('/{id}/update', 'ProviderController@update')->name('providers.update');
             Route::delete('/{id}/delete', 'ProviderController@delete')->name('providers.delete');
@@ -54,9 +55,17 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
         });
         Route::prefix('/lots')->group(function(){
             Route::get('/', 'LotController@index')->name('lots.index');
+            Route::get('/select', 'LotController@indexData')->name('lots.indexData');
             Route::post('/store', 'LotController@store')->name('lots.store');
             Route::put('/{id}/update', 'LotController@update')->name('lots.update');
             Route::delete('/{id}/delete', 'LotController@delete')->name('lots.delete');
+        });
+        Route::prefix('/guides-sadt')->group(function(){
+            Route::get('/', 'GuideSadtController@index')->name('guidesSadt.index');
+            Route::get('/{id}', 'GuideSadtController@show')->name('guidesSadt.show');
+            Route::post('/store', 'GuideSadtController@store')->name('guidesSadt.store');
+            Route::put('/{id}/update', 'GuideSadtController@update')->name('guidesSadt.update');
+            Route::delete('/{id}/delete', 'GuideSadtController@delete')->name('guidesSadt.delete');
         });
     });
     Route::get('/{view?}', 'HomeController')->where('view', '(.*)')->name('home');

@@ -165,7 +165,16 @@ export default {
                     cbo: this.cbo,
                     operators: this.doctor_operators
                 }).then(response => {
-                    this.$emit('action', 'save')
+                    this.$emit('action', {
+                        id: response.data.data[0].id,
+                        name: response.data.data[0].name,
+                        cp: response.data.data[0].cp,
+                        uf: response.data.data[0].uf,
+                        advice_number: response.data.data[0].advice_number,
+                        cbo: response.data.data[0].cbo,
+                        operators: this.doctor_operators,
+                        doctor_operator: this.doctor_operators[0]
+                    })
                 }).catch(err => {
                     if(err.response.data.errors) {
                         this.errors = err.response.data.errors;
