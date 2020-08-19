@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class GuideSadt extends Model
 {
     use SoftDeletes;
+
+    protected $with = ['lot', 'patient', 'doctor', 'provider'];
     /**
      * The attributes that are mass assignable.
      *
@@ -39,7 +41,8 @@ class GuideSadt extends Model
         'character_treatment_formatted',
         'type_treatment_formatted',
         'accident_indication_formatted',
-        'total_formatted'
+        'total_formatted',
+        'total_guide'
     ];
 
     public function getRnFormattedAttribute()
@@ -153,9 +156,24 @@ class GuideSadt extends Model
         }
     }
 
+    public function getTotalGuideAttribute()
+    {
+        if (!empty($this->attributes['total'])) {
+            return number_format($this->attributes['total'], 2, ',', '.');
+        }
+        return null;
+    }
+
     public function getTotalFormattedAttribute()
     {
         return 'R$ ' . number_format(empty($this->attributes['total']) ? 0 : $this->attributes['total'], 2, ',', '.');
+    }
+
+    public function setTotalAttribute($value)
+    {
+        if (!empty($value)) {
+            $this->attributes['total'] = str_replace(',', '.', str_replace('.', '.', $value));
+        }
     }
 
     /**

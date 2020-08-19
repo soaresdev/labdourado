@@ -1,18 +1,19 @@
 <template>
     <div>
-        <div class="text-center" v-for="operator in data['operators']" :key="operator.provider_operator.provider_operator_number">
-            <p>{{ operator.provider_operator[name] }}</p>
+        <div class="text-center" v-for="operator in data[name]" :key="operator.provider_operator.operator_id">
+            <p>{{operator.name}} - {{ operator.provider_operator[meta.column] }}</p>
         </div>
     </div>
 </template>
 
 <script>
 export default {
-name: "IndexProviderOperator",
+    name: "IndexProviderOperator",
     props: {
         data: {},
-        name: {}
-    },
+        name: {},
+        meta: {}
+    }
 }
 </script>
 

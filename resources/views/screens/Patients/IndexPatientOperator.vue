@@ -1,7 +1,7 @@
 <template>
 <div>
-    <div class="text-center" v-for="operator in data['operators']" :key="operator.patient_operator.wallet_number">
-    <p>{{ operator.patient_operator[name] }}</p>
+    <div class="text-center" v-for="operator in data['operators']" :key="operator.patient_operator.operator_id">
+    <p>{{ meta.name ? operator.name + ' - ' : '' }}{{ operator.patient_operator[meta.column] }}</p>
 </div>
 </div>
 </template>
@@ -11,7 +11,7 @@ export default {
     name: 'IndexPatientOperator',
     props: {
         data: {},
-        name: {}
+        meta: {}
     },
 }
 </script>

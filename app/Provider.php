@@ -3,49 +3,16 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use JamesDordoy\LaravelVueDatatable\Traits\LaravelVueDatatableTrait;
+use Illuminate\Database\Eloquent\SoftDeletes;
 class Provider extends Model
 {
-    use LaravelVueDatatableTrait;
+    use SoftDeletes;
     protected $with = ['operators'];
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $dataTableColumns = [
-        'id' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-        'name' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-        'cnes' => [
-            'searchable' => true,
-            'orderable' => true,
-        ]
-    ];
-    protected $dataTableRelationships = [
-        "belongsToMany" => [
-            "operators" => [
-                "model" => Operator::class,
-                "pivot" => [
-                    "table_name" => "provider_operators",
-                    "primary_key" => "id",
-                    "foreign_key" => "operator_id",
-                    "local_key" => "provider_id",
-                ],
-                "columns" => [
-                    'name' => [
-                        'searchable' => true,
-                        'orderable' => true,
-                    ],
-                ]
-            ],
-        ]
-    ];
 
     protected $fillable = [
         'name', 'cnes',
@@ -57,8 +24,8 @@ class Provider extends Model
      * @var array
      */
     protected $casts = [
-        'created_at' => 'datetime:Y-m-d',
-        'updated_at' => 'datetime:Y-m-d',
+        'created_at' => 'datetime:d/m/Y',
+        'updated_at' => 'datetime:d/m/Y',
     ];
 
     public function operators()

@@ -17,13 +17,16 @@ class PatientController extends Controller
         $orderBy = $request->input('dir');
         $searchValue = $request->input('search');
         $operator = $request->input('operator');
-        $query = Patient::eloquentQuery($sortBy, $orderBy, $searchValue, [
-            "operators"
-        ]);
-        $query->where("operators.id", !empty($operator) ? $operator : Operator::all(['id', 'name'])->first()->id);
-        if(!empty($searchValue)){
-            $query->orWhere("patient_operators.wallet_number", "LIKE", "%$searchValue%");
-        }
+        $query = Patient::whereHas('operators', function ($q) use ($operator, $searchValue) {
+            $q->where('patient_operators.operator_id', !empty($operator) ? $operator : Operator::all(['id', 'name'])->first()->id);
+            $q->where(function($q2) use ($searchValue) {
+                $q2->where("patient_operators.wallet_number", "LIKE", "%$searchValue%")
+                    ->orWhere("patients.id", "LIKE", "%$searchValue%")
+                    ->orWhere("patients.name", "LIKE", "%$searchValue%")
+                    ->orWhere("patients.cns", "LIKE", "%$searchValue%");
+            });
+        });
+        $query->orderBy($sortBy, $orderBy);
         $data = $query->paginate($length);
         return new DataTableCollectionResource($data);
     }

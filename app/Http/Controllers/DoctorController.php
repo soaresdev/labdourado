@@ -18,13 +18,17 @@ class DoctorController extends Controller
         $searchValue = $request->input('search');
 
         $operator = $request->input('operator');
-        $query = Doctor::eloquentQuery($sortBy, $orderBy, $searchValue, [
-            "operators"
-        ]);
-        $query->where("operators.id", isset($operator) ? $operator : Operator::all(['id', 'name'])->first()->id);
-        if(!empty($searchValue)){
-            $query->orWhere("doctor_operators.doctor_operator_number", "LIKE", "%$searchValue%");
-        }
+        $query = Doctor::whereHas('operators', function ($q) use ($operator, $searchValue) {
+            $q->where('doctor_operators.operator_id', !empty($operator) ? $operator : Operator::all(['id', 'name'])->first()->id);
+            $q->where(function($q2) use ($searchValue) {
+                $q2->where("doctor_operators.doctor_operator_number", "LIKE", "%$searchValue%")
+                    ->orWhere("doctors.id", "LIKE", "%$searchValue%")
+                    ->orWhere("doctors.name", "LIKE", "%$searchValue%")
+                    ->orWhere("doctors.advice_number", "LIKE", "%$searchValue%")
+                    ->orWhere("doctors.cbo", "LIKE", "%$searchValue%");
+            });
+        });
+        $query->orderBy($sortBy, $orderBy);
         $data = $query->paginate($length);
 
         return new DataTableCollectionResource($data);

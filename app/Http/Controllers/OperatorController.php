@@ -15,8 +15,10 @@ class OperatorController extends Controller
         $sortBy = $request->input('column');
         $orderBy = $request->input('dir');
         $searchValue = $request->input('search');
-
-        $query = Operator::eloquentQuery($sortBy, $orderBy, $searchValue);
+        $query = Operator::where("operators.id", "LIKE", "%$searchValue%")
+            ->orWhere("operators.name", "LIKE", "%$searchValue%")
+            ->orWhere("operators.ans", "LIKE", "%$searchValue%");
+        $query->orderBy($sortBy, $orderBy);
 
         $data = $query->paginate($length);
 
@@ -25,7 +27,7 @@ class OperatorController extends Controller
 
     public function indexData()
     {
-        return $this->message->info()->setData(Operator::all(['id', 'name'])->all())->getResponse();
+        return $this->message->info()->setData(Operator::all(['id', 'name', 'ans'])->all())->getResponse();
     }
 
     public function store(Request $request)

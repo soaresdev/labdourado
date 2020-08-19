@@ -25,7 +25,7 @@
                 <v-text-field label="Nome *" required v-model="name"></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field label="Código CNES *" hint="Usado nas guias SADT" persistent-hint required v-model="cnes"></v-text-field>
+                <v-text-field label="Código CNES" hint="Usado nas guias SADT" persistent-hint v-model="cnes"></v-text-field>
               </v-col>
             </v-row>
           </v-container>
@@ -47,7 +47,7 @@
                   </tr>
                   </thead>
                   <tbody>
-                  <tr v-for="item in provider_operators" :key="item.provider_operator_number">
+                  <tr v-for="item in provider_operators" :key="item.operator_id">
                       <td>{{ item.operator }}</td>
                       <td>{{ item.provider_operator_number }}</td>
                       <td><v-icon @click="open(item)">mdi-pencil</v-icon></td>
@@ -66,7 +66,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="$emit('action', 'close')">Fechar</v-btn>
+          <v-btn color="blue darken-1" text @click="$emit('action')">Fechar</v-btn>
           <v-btn color="blue darken-1" text @click="salvar">Salvar</v-btn>
         </v-card-actions>
       </v-card>
@@ -104,7 +104,7 @@ export default {
             name: '',
             cnes: '',
             action: 'store',
-            provider_operator: {},
+            provider_operator: null,
             errors: []
         }
     },
@@ -123,13 +123,13 @@ export default {
         },
         salvar() {
             this.errors = [];
-            if(this.action == 'store') {
+            if(this.action === 'store') {
                 this.request().post('/providers/store', {
                     name: this.name,
                     cnes: this.cnes,
                     operators: this.provider_operators
                 }).then(response => {
-                    this.$emit('action', 'save')
+                    this.$emit('action')
                 }).catch(err => {
                     if(err.response.data.errors) {
                         this.errors = err.response.data.errors;
@@ -141,7 +141,7 @@ export default {
                     cnes: this.cnes,
                     operators: this.provider_operators
                 }).then(response => {
-                    this.$emit('action', 'save')
+                    this.$emit('action')
                 }).catch(err => {
                     if(err.response.data.errors) {
                         this.errors = err.response.data.errors;
@@ -151,7 +151,7 @@ export default {
         },
         save(data) {
             if(data){
-                if(data.action == 'store') {
+                if(data.action === 'store') {
                     this.provider.operators.push({
                         name: data.operator.text,
                         provider_operator: {
@@ -160,17 +160,16 @@ export default {
                             provider_id: this.provider.id
                         }
                     })
-                } else if (data.action == 'update') {
+                } else {
                     this.provider.operators.map(op => {
-                        if(op.provider_operator.operator_id == data.operator.value){
+                        if(op.provider_operator.operator_id === data.operator.value){
                             op.provider_operator.provider_operator_number = data.provider_operator_number;
                         }
                         return op;
                     })
                 }
-            } else {
-                this.provider_operator = {};
             }
+            this.provider_operator = null;
             this.dialog = false;
         },
         open(data) {
@@ -178,7 +177,7 @@ export default {
             this.dialog = true;
         },
         remove(data) {
-            this.provider.operators.splice(this.provider.operators.findIndex(pv_op => pv_op.provider_operator.provider_operator_number == data.provider_operator_number), 1);
+            this.provider.operators.splice(this.provider.operators.findIndex(pv_op => pv_op.provider_operator.provider_operator_number === data.provider_operator_number), 1);
         }
     }
 }

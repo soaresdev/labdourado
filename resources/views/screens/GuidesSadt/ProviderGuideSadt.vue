@@ -2,15 +2,16 @@
     <v-container fluid>
         <v-row>
             <v-col class="d-flex" cols="12" md="3">
-                <v-select
+                <v-autocomplete
                     v-model="provider"
                     :items="providers"
                     filled
+                    dense
                     label="Prestadora *"
                     :item-text="providers => providers.name"
                     :item-value="providers => providers"
                     required
-                ></v-select>
+                ></v-autocomplete>
             </v-col>
             <v-col cols="12" md="3">
                 <v-text-field label="29 - Cód. na Operadora" placeholder="Cód. na Operadora" v-model="provider.provider_operator.provider_operator_number" readonly></v-text-field>
@@ -32,11 +33,27 @@ export default {
         providers: {
             type: Array,
             default: () => ([])
+        },
+        guide: {
+            type: Object
         }
     },
-    computed: {
-        provider() {
-            return this.providers[0]
+    data() {
+        return {
+            provider: null
+        }
+    },
+    created() {
+      this.verify();
+    },
+    methods: {
+        verify() {
+            if(this.guide) {
+                this.provider = this.guide.provider;
+                Object.assign(this.provider, {provider_operator: this.guide.provider.operators[0].provider_operator});
+            } else {
+                this.provider = this.providers[0];
+            }
         }
     }
 }

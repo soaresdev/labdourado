@@ -24,7 +24,7 @@
                 ></v-select>
             </v-col>
             <v-col cols="12" md="4">
-                <v-text-field  label="65 - Total Geral (R$)" v-model="total" type="number"></v-text-field>
+                <v-text-field label="65 - Total Geral (R$)" v-model="total"></v-text-field>
             </v-col>
         </v-row>
     </v-container>
@@ -34,7 +34,15 @@
 import {tas, ais} from "./selects";
 
 export default {
-name: "treatment-data",
+    name: "treatment-data",
+    props: {
+        guide: {
+            type: Object
+        }
+    },
+    created() {
+        this.verify();
+    },
     data() {
         return {
             tas,
@@ -42,6 +50,15 @@ name: "treatment-data",
             type_treatment: '05',
             accident_indication: '9',
             total: ''
+        }
+    },
+    methods: {
+        verify() {
+            if(this.guide) {
+                this.type_treatment = this.guide.type_treatment;
+                this.accident_indication = this.guide.accident_indication;
+                this.total = this.guide.total_guide;
+            }
         }
     }
 }

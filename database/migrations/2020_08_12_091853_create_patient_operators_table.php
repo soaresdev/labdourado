@@ -19,7 +19,7 @@ class CreatePatientOperatorsTable extends Migration
             $table->unsignedBigInteger('operator_id');
             $table->foreign('operator_id')->references('id')->on('operators')->onUpdate('CASCADE')->onDelete('CASCADE');
             $table->string('wallet_number');
-            $table->date('wallet_expiration');
+            $table->date('wallet_expiration')->nullable();
         });
     }
 

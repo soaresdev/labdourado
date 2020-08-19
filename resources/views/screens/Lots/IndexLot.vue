@@ -1,51 +1,65 @@
 <template>
-<div>
+    <div>
         <v-dialog
-      v-model="dialog"
-      width="500"
-    >
-        <dialog-lot v-if="dialog" :operators="operators" :lot="lot" @action="close"></dialog-lot>
-    </v-dialog>
-    <data-table
-        :columns="columns"
-        :url="url"
-        :filters="filters"
-        ref="table">
-        <div slot="filters" slot-scope="{ tableData, perPage }">
-        <div class="row mb-2 justify-content-between">
-            <div class="col-md-2">
-                <select class="form-control" v-model="tableData.length">
-                    <option :key="page" v-for="page in perPage">{{ page }}</option>
-                </select>
+            v-model="dialog"
+            width="800"
+        >
+            <dialog-lot v-if="dialog" :operators="operators" :lot="lot" @action="close"></dialog-lot>
+        </v-dialog>
+        <data-table
+            :columns="columns"
+            :url="url"
+            :filters="filters"
+            order-dir="desc"
+            ref="table">
+            <div slot="filters" slot-scope="{ tableData, perPage }">
+                <div class="row mb-2 justify-content-between align-items-center">
+                    <div class="col-md-2">
+                        <select class="form-control" v-model="tableData.length">
+                            <option :key="page" v-for="page in perPage">{{ page }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input
+                            name="name"
+                            class="form-control"
+                            v-model="tableData.search"
+                            placeholder="Pesquisar">
+                    </div>
+                    <div class="col-md-2">
+                        <select
+                            v-model="tableData.filters.operator"
+                            class="form-control">
+                            <option v-for="operator in operators" :key="operator.value" :value="operator.value">
+                                {{ operator.text }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select
+                            v-model="tableData.filters.closed"
+                            class="form-control">
+                            <option value>Aberto/Fechado</option>
+                            <option value="1">Fechado</option>
+                            <option value="0">Aberto</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 text-right">
+                        <v-btn class="ma-2" small color="success" @click="open(null)">
+                            <v-icon left>mdi-plus</v-icon>
+                            Novo
+                        </v-btn>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-4">
-                <input
-                    name="name"
-                    class="form-control"
-                    v-model="tableData.search"
-                    placeholder="Pesquisar">
-            </div>
-            <div class="col-md-4">
-                <select
-                    v-model="tableData.filters.operator"
-                    class="form-control">
-                    <option v-for="operator in operators" :key="operator.value" :value="operator.value">{{ operator.text }}</option>
-                </select>
-            </div>
-            <div class="col-md-2 text-right">
-                <v-btn class="ma-2" small color="success"  @click="open(null)">
-                    <v-icon left>mdi-plus</v-icon> Novo
-                </v-btn>
-            </div>
-        </div>
-    </div>
-    </data-table>
+        </data-table>
     </div>
 </template>
 
 <script>
 import ActionsTable from '../../assets/js/components/ActionsTable'
 import DialogLot from './DialogLot'
+
 export default {
     name: 'IndexLot',
     components: {
@@ -60,52 +74,71 @@ export default {
             columns: [
                 {
                     label: 'ID',
+                    name: 'id',
+                    columnName: 'lots.id',
+                    orderable: true,
+                },
+                {
+                    label: 'Nº do Lote',
                     name: 'number',
                     columnName: 'lots.number',
                     orderable: true,
                 },
                 {
                     label: 'Qtd. de Guias',
-                    name: 'lots.guides_count',
-                    searchable: false
+                    name: 'guides_count',
+                    searchable: false,
+                    orderable: false
                 },
                 {
-                label: '',
-                name: 'Editar',
-                classes: {
-                    color: 'primary',
-                    icon: 'mdi-pencil'
+                    label: 'Total do Lote',
+                    name: 'total_formatted',
+                    searchable: false,
+                    orderable: false
                 },
-                width: 10,
-                orderable: false,
-                event: "click",
-                handler: this.open,
-                component: ActionsTable,
-            },
-            {
-                label: '',
-                name: 'Excluir',
-                classes: {
-                    color: 'error',
-                    icon: 'mdi-delete'
+                {
+                    label: 'Data de Fechamento',
+                    name: 'closed_at',
+                    searchable: false,
                 },
-                width: 10,
-                orderable: false,
-                event: "click",
-                handler: this.delete,
-                component: ActionsTable,
-            },
+                {
+                    label: '',
+                    name: 'Editar',
+                    classes: {
+                        color: 'primary',
+                        icon: 'mdi-pencil'
+                    },
+                    width: 5,
+                    orderable: false,
+                    event: "click",
+                    handler: this.open,
+                    component: ActionsTable,
+                },
+                {
+                    label: '',
+                    name: 'Excluir',
+                    classes: {
+                        color: 'error',
+                        icon: 'mdi-delete'
+                    },
+                    width: 5,
+                    orderable: false,
+                    event: "click",
+                    handler: this.delete,
+                    component: ActionsTable,
+                },
             ],
             filters: {
-                operator: ''
+                operator: '',
+                closed: ''
             },
         }
     },
-    created(){
+    created() {
         this.getOperators();
     },
     methods: {
-        getOperators(){
+        getOperators() {
             this.request().get('/operators/select').then(response => {
                 this.operators = response.data.data.map(op => {
                     return {
@@ -119,9 +152,7 @@ export default {
             })
         },
         open(data) {
-            this.lot = data || {
-                operators: []
-            };
+            this.lot = data;
             this.dialog = true;
         },
         close() {
@@ -129,9 +160,11 @@ export default {
             this.$refs.table.getData();
         },
         delete(data) {
-            this.request().delete(`/lots/${data.id}/delete`).then(response => {
+            if (window.confirm("Tem certeza que deseja excluir o lote?\nIsso pode causar inconsistências no sistema pois ele pode estar vinculado a uma guia")) {
+                this.request().delete(`/lots/${data.id}/delete`).then(response => {
                     this.$refs.table.getData();
                 });
+            }
         }
     },
 }

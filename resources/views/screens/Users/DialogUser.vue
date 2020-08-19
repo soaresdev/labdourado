@@ -2,7 +2,7 @@
   <div class="text-center">
       <v-card>
         <v-card-title class="headline grey lighten-2">
-          {{ action == 'store' ? 'Novo usuário' : 'Editar usuário' }}
+            {{ action === 'store' ? 'Novo usuário' : 'Editar usuário' }}
         </v-card-title>
 
         <v-card-text>
@@ -29,11 +29,11 @@
               </v-col>
               <v-col cols="6">
                 <v-text-field
-                  :label="'Senha' + (action == 'store' ? ' *' : '')"
+                  :label="'Senha' + (action === 'store' ? ' *' : '')"
                   hint="Mínimo 6 caracteres"
                   type="password"
                   persistent-hint
-                  required
+                  :required="action === 'store'"
                   v-model="password"
                 ></v-text-field>
               </v-col>
@@ -45,7 +45,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="$emit('action', 'close')">Fechar</v-btn>
+          <v-btn color="blue darken-1" text @click="$emit('action')">Fechar</v-btn>
           <v-btn color="blue darken-1" text @click="salvar">Salvar</v-btn>
         </v-card-actions>
       </v-card>
@@ -76,22 +76,20 @@ export default {
     methods: {
         verifyAction() {
             if(this.user){
-                this.name = this.user.name,
-                this.username = this.user.username
-                this.action = 'update'
-            } else {
-                this.action = 'store'
+                this.name = this.user.name;
+                this.username = this.user.username;
+                this.action = 'update';
             }
         },
         salvar() {
             this.errors = [];
-            if(this.action == 'store') {
+            if(this.action === 'store') {
                 this.request().post('/users/store', {
                     name: this.name,
                     username: this.username,
                     password: this.password
                 }).then(response => {
-                    this.$emit('action', 'save')
+                    this.$emit('action')
                 }).catch(err => {
                     if(err.response.data.errors) {
                         this.errors = err.response.data.errors;
@@ -103,7 +101,7 @@ export default {
                     username: this.username,
                     password: this.password
                 }).then(response => {
-                    this.$emit('action', 'save')
+                    this.$emit('action')
                 }).catch(err => {
                     if(err.response.data.errors) {
                         this.errors = err.response.data.errors;

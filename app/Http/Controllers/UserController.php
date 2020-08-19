@@ -17,7 +17,10 @@ class UserController extends Controller
         $orderBy = $request->input('dir');
         $searchValue = $request->input('search');
 
-        $query = User::eloquentQuery($sortBy, $orderBy, $searchValue);
+        $query = User::where("id", "LIKE", "%$searchValue%")
+            ->orWhere("name", "LIKE", "%$searchValue%")
+            ->orWhere("username", "LIKE", "%$searchValue%")
+            ->orderBy($sortBy, $orderBy);
 
         $data = $query->paginate($length);
 

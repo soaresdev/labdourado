@@ -2,15 +2,16 @@
     <v-container fluid>
         <v-row>
             <v-col class="d-flex" cols="12" md="4">
-                <v-select
+                <v-autocomplete
                     v-model="patient"
                     :items="patients_select"
+                    dense
                     filled
                     label="Paciente *"
-                    :item-text="patients => patients.name"
+                    :item-text="patients => `${patients.name} - ${patients.patient_operator.wallet_number}`"
                     :item-value="patients => patients"
                     required
-                ></v-select>
+                ></v-autocomplete>
                 <v-btn class="mx-2" fab small @click="open">
                     <v-icon dark>mdi-plus</v-icon>
                 </v-btn>
@@ -68,6 +69,9 @@ export default {
         patients: {
             type: Array,
             default: () => ([])
+        },
+        guide: {
+            type: Object
         }
     },
     computed: {
@@ -92,7 +96,17 @@ export default {
             new_patient: null
         }
     },
+    created() {
+        this.verify();
+    },
     methods: {
+        verify() {
+            if(this.guide) {
+                this.patient = this.guide.patient;
+                Object.assign(this.patient, {patient_operator: this.guide.patient.operators[0].patient_operator});
+                this.rn = this.guide.rn;
+            }
+        },
         save(data) {
             if(data) {
                 this.patient = data;

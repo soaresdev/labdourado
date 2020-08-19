@@ -96,7 +96,7 @@ export default {
         return {
             dialog: false,
             name: '',
-            patient_operator: {},
+            patient_operator: null,
             cns: '',
             action: 'store',
             errors: []
@@ -125,7 +125,7 @@ export default {
         },
         salvar() {
             this.errors = [];
-            if(this.action == 'store') {
+            if(this.action === 'store') {
                 this.request().post('/patients/store', {
                     name: this.name,
                     operators: this.patient_operators,
@@ -159,7 +159,7 @@ export default {
         },
         save(data) {
             if(data){
-                if(data.action == 'store') {
+                if(data.action === 'store') {
                     this.patient.operators.push({
                         name: data.operator.text,
                         patient_operator: {
@@ -169,18 +169,17 @@ export default {
                             patient_id: this.patient.id
                         }
                     })
-                } else if (data.action == 'update') {
+                } else {
                     this.patient.operators.map(op => {
-                        if(op.patient_operator.operator_id == data.operator.value){
+                        if(op.patient_operator.operator_id === data.operator.value){
                             op.patient_operator.wallet_number = data.wallet_number;
                             op.patient_operator.wallet_expiration = data.wallet_expiration;
                         }
                         return op;
                     })
                 }
-            } else {
-                this.patient_operator = {};
             }
+            this.patient_operator = null;
             this.dialog = false;
         },
         open(data) {
@@ -188,7 +187,7 @@ export default {
             this.dialog = true;
         },
         remove(data) {
-            this.patient.operators.splice(this.patient.operators.findIndex(pat_op => pat_op.patient_operator.wallet_number == data.wallet_number), 1);
+            this.patient.operators.splice(this.patient.operators.findIndex(pat_op => pat_op.patient_operator.wallet_number === data.wallet_number), 1);
         }
     }
 }

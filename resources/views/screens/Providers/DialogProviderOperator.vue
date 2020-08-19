@@ -29,6 +29,7 @@
                                 label="Operadora *"
                                 :item-text="operators.text"
                                 :item-value="operators.value"
+                                :readonly="!!provider_operator"
                             ></v-select>
                         </v-col>
                         <v-col cols="12" md="6">
@@ -80,10 +81,11 @@ export default {
     },
     computed: {
         operators_select() {
-            if (this.provider_operator.operator_id) {
-                return this.operators.filter(op => op.value == this.provider_operator.operator_id)
-            } else if (this.operators_provider.length > 0) {
-                return this.operators.filter(op => this.operators_provider.find(pv_op => pv_op.operator_id == op.value) == -1)
+            if (this.provider_operator) {
+                return this.operators.filter(op => op.value === this.provider_operator.operator_id);
+            }
+            if (this.operators_provider.length > 0) {
+                return this.operators.filter(op => !this.operators_provider.find(op_pv => op.value === op_pv.operator_id));
             } else {
                 return this.operators;
             }
@@ -91,24 +93,22 @@ export default {
     },
     methods: {
         verify() {
-            if (this.provider_operator.operator_id) {
+            if (this.provider_operator) {
                 this.action = 'update';
                 this.operator = this.provider_operator.operator_id;
                 this.provider_operator_number = this.provider_operator.provider_operator_number;
-            } else {
-                this.action = 'store';
             }
         },
         salvar() {
             this.errors = []
             if (!this.operator || !this.provider_operator_number) {
-                this.errors.push('Preencha todos os campos!')
+                this.errors.push('Preencha todos os campos!');
             } else {
                 this.$emit('action', {
                     action: this.action,
                     operator: {
                         value: this.operator,
-                        text: this.operators.find(op => op.value == this.operator).text
+                        text: this.operators.find(op => op.value === this.operator).text
                     }, provider_operator_number: this.provider_operator_number
                 });
             }

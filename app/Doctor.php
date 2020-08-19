@@ -4,58 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use JamesDordoy\LaravelVueDatatable\Traits\LaravelVueDatatableTrait;
 
 class Doctor extends Model
 {
-    use SoftDeletes, LaravelVueDatatableTrait;
+    use SoftDeletes;
     protected $with = ['operators'];
-    protected $dataTableColumns = [
-        'id' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-        'name' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-        'cp' => [
-            'searchable' => true,
-            'orderable' => false,
-        ],
-        'advice_number' => [
-            'searchable' => true,
-            'orderable' => false,
-        ],
-        'uf' => [
-            'searchable' => true,
-            'orderable' => false,
-        ],
-        'cbo' => [
-            'searchable' => true,
-            'orderable' => false,
-        ],
-    ];
 
-    protected $dataTableRelationships = [
-        "belongsToMany" => [
-            "operators" => [
-                "model" => Operator::class,
-                "pivot" => [
-                    "table_name" => "doctor_operators",
-                    "primary_key" => "id",
-                    "foreign_key" => "operator_id",
-                    "local_key" => "doctor_id",
-                ],
-                "columns" => [
-                    'name' => [
-                        'searchable' => true,
-                        'orderable' => true,
-                    ],
-                ]
-            ],
-        ]
-    ];
     /**
      * The attributes that are mass assignable.
      *

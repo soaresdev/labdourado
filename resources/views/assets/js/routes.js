@@ -41,14 +41,9 @@ export default [
         component: require('../../screens/GuidesSadt/IndexGuideSadt').default,
     },
     {
-        path: '/guides-sadt/create',
-        name: 'guides-sadt.create',
+        path: '/guides-sadt/alter/:id',
+        name: 'guides-sadt.alter',
         component: require('../../screens/GuidesSadt/CreateGuideSadt').default,
-    },
-    {
-        path: '/guides-sadt/{id}/edit',
-        name: 'guides-sadt.edit',
-        component: require('../../screens/GuidesSadt/EditGuideSadt').default,
     },
     {
         path: '*',

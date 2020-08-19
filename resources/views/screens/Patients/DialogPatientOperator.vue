@@ -34,7 +34,7 @@
                 <v-text-field label="Número da carteira *" required v-model="wallet_number"></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
-                <v-text-field label="Validade" type="date" required v-model="wallet_expiration"></v-text-field>
+                <v-text-field label="Validade" type="date" v-model="wallet_expiration"></v-text-field>
               </v-col>
               </v-row>
         </v-container>
@@ -76,10 +76,10 @@ export default {
     },
     computed: {
         operators_select(){
-            if(this.patient_operator.operator_id){
-                return this.operators.filter(op => op.value == this.patient_operator.operator_id)
-            } else if(this.operators_patient.length > 0) {
-                return this.operators.filter(op => this.operators_patient.find(pat_op => pat_op.operator_id == op.value) == -1)
+            if(this.patient_operator){
+                return this.operators.filter(op => op.value === this.patient_operator.operator_id)
+            } else if (this.operators_patient.length > 0) {
+                return this.operators.filter(op => !this.operators_patient.find(op_pat => op.value === op_pat.operator_id));
             } else {
                 return this.operators;
             }
@@ -90,25 +90,23 @@ export default {
     },
     methods: {
         verify(){
-            if(this.patient_operator.operator_id){
+            if(this.patient_operator){
                 this.action = 'update';
                 this.operator = this.patient_operator.operator_id;
                 this.wallet_number = this.patient_operator.wallet_number;
                 this.wallet_expiration = this.patient_operator.wallet_expiration;
-            } else {
-                this.action = 'store';
             }
         },
         salvar() {
             this.errors = []
-            if(!this.operator || !this.wallet_number || !this.wallet_expiration) {
-                this.errors.push('Preencha todos os campos!')
+            if(!this.operator || !this.wallet_number) {
+                this.errors.push('Preencha a operadora e o número da carteira todos os campos!')
             } else {
             this.$emit('action', {
                 action: this.action,
                 operator: {
                     value: this.operator,
-                    text: this.operators.find(op => op.value == this.operator).text
+                    text: this.operators.find(op => op.value === this.operator).text
                 },
                 wallet_number: this.wallet_number,
                 wallet_expiration: this.wallet_expiration

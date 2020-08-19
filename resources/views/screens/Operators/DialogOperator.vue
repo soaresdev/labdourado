@@ -2,7 +2,7 @@
   <div class="text-center">
       <v-card>
         <v-card-title class="headline grey lighten-2">
-          {{ action == 'store' ? 'Nova operadora' : 'Editar operadora' }}
+            {{ action === 'store' ? 'Nova operadora' : 'Editar operadora' }}
         </v-card-title>
 
         <v-card-text>
@@ -35,7 +35,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="$emit('action', 'close')">Fechar</v-btn>
+          <v-btn color="blue darken-1" text @click="$emit('action')">Fechar</v-btn>
           <v-btn color="blue darken-1" text @click="salvar">Salvar</v-btn>
         </v-card-actions>
       </v-card>
@@ -74,12 +74,12 @@ export default {
         },
         salvar() {
             this.errors = [];
-            if(this.action == 'store') {
+            if(this.action === 'store') {
                 this.request().post('/operators/store', {
                     name: this.name,
                     ans: this.ans
                 }).then(response => {
-                    this.$emit('action', 'save')
+                    this.$emit('action')
                 }).catch(err => {
                     if(err.response.data.errors) {
                         this.errors = err.response.data.errors;
@@ -90,7 +90,7 @@ export default {
                     name: this.name,
                     ans: this.ans
                 }).then(response => {
-                    this.$emit('action', 'save')
+                    this.$emit('action')
                 }).catch(err => {
                     if(err.response.data.errors) {
                         this.errors = err.response.data.errors;

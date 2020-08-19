@@ -2,15 +2,13 @@
 
 namespace App;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
-use JamesDordoy\LaravelVueDatatable\Traits\LaravelVueDatatableTrait;
 
 class User extends Authenticatable
 {
-    use Notifiable,LaravelVueDatatableTrait;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -42,6 +40,11 @@ class User extends Authenticatable
 
     public function setPasswordAttribute($value)
     {
+        if (empty($value)) {
+            unset($this->attributes['password']);
+            return;
+        }
+
         $this->attributes['password'] = Hash::make($value);
     }
 }

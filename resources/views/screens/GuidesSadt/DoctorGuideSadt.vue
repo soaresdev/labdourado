@@ -2,15 +2,16 @@
     <v-container fluid>
         <v-row>
             <v-col class="d-flex" cols="12" md="4">
-                <v-select
+                <v-autocomplete
                     v-model="doctor"
+                    dense
                     :items="doctors_select"
                     filled
                     label="Profissional *"
                     :item-text="doctors => doctors.name"
                     :item-value="doctors => doctors"
                     required
-                ></v-select>
+                ></v-autocomplete>
                 <v-btn class="mx-2" fab small @click="open">
                     <v-icon dark>mdi-plus</v-icon>
                 </v-btn>
@@ -34,6 +35,7 @@
                     v-model="doctor.cp"
                     :items="cps"
                     filled
+                    dense
                     label="16 - Conselho Profissional"
                     :item-text="cps.text"
                     :item-value="cps.value"
@@ -49,6 +51,7 @@
                     v-model="doctor.uf"
                     :items="ufs"
                     filled
+                    dense
                     label="18 - UF"
                     :item-text="ufs.text"
                     :item-value="ufs.value"
@@ -85,6 +88,9 @@ export default {
         doctors: {
             type: Array,
             default: () => ([])
+        },
+        guide: {
+            type: Object
         }
     },
     computed: {
@@ -109,7 +115,16 @@ export default {
             new_doctor: null
         }
     },
+    created() {
+        this.verify();
+    },
     methods: {
+        verify() {
+            if(this.guide) {
+                this.doctor = this.guide.doctor;
+                Object.assign(this.doctor, {doctor_operator: this.guide.doctor.operators[0].doctor_operator});
+            }
+        },
         save(data) {
             if (data) {
                 this.doctor = data;

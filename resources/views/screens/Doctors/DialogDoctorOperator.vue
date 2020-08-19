@@ -79,10 +79,10 @@ export default {
     },
     computed: {
         operators_select(){
-            if(this.doctor_operator.operator_id){
-                return this.operators.filter(op => op.value == this.doctor_operator.operator_id)
+            if(this.doctor_operator){
+                return this.operators.filter(op => op.value === this.doctor_operator.operator_id)
             } else if(this.operators_doctor.length > 0) {
-                return this.operators.filter(op => this.operators_doctor.find(doc_op => doc_op.operator_id == op.value) == -1)
+                return this.operators.filter(op => !this.operators_doctor.find(op_doc => op.value === op_doc.operator_id));
             } else {
                 return this.operators;
             }
@@ -90,7 +90,7 @@ export default {
     },
     methods:{
         verify(){
-            if(this.doctor_operator.operator_id){
+            if(this.doctor_operator){
                 this.action = 'update';
                 this.operator = this.doctor_operator.operator_id;
                 this.doctor_operator_number = this.doctor_operator.doctor_operator_number;
@@ -107,7 +107,7 @@ export default {
                 action: this.action,
                 operator: {
                     value: this.operator,
-                    text: this.operators.find(op => op.value == this.operator).text
+                    text: this.operators.find(op => op.value === this.operator).text
                 }, doctor_operator_number: this.doctor_operator_number});
             }
         },

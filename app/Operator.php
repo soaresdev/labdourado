@@ -4,47 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use JamesDordoy\LaravelVueDatatable\Traits\LaravelVueDatatableTrait;
 
 class Operator extends Model
 {
     use SoftDeletes;
-    use LaravelVueDatatableTrait;
-    protected $dataTableColumns = [
-        'id' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-        'name' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-        'ans' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-    ];
-
-    protected $dataTableRelationships = [
-        "belongsToMany" => [
-            "patients" => [
-                "model" => Patient::class,
-                "pivot" => [
-                    "table_name" => "patient_operators",
-                    "primary_key" => "id",
-                    "foreign_key" => "patient_id",
-                    "local_key" => "operator_id",
-                ],
-                "columns" => [
-                    'name' => [
-                        'searchable' => true,
-                        'orderable' => true,
-                    ],
-                ]
-            ],
-        ]
-    ];
-
     /**
      * The attributes that are mass assignable.
      *
@@ -66,7 +29,7 @@ class Operator extends Model
 
     public function lots()
     {
-        return $this->belongsToMany(Lot::class, 'lot_operators')->as('lot_operator');
+        return $this->hasMany(Lot::class);
     }
 
     public function doctors()
@@ -81,7 +44,7 @@ class Operator extends Model
 
     public function patients()
     {
-        return $this->belongsToMany(Patient::class, 'patient_operators')->using(PatientOperator::class)
+        return $this->belongsToMany(Patient::class, 'patient_operators', 'operator_id', 'patient_id')->using(PatientOperator::class)
             ->as('patient_operator')
             ->withPivot([
                 'wallet_number',

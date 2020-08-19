@@ -16,6 +16,8 @@ class CreateLotsTable extends Migration
         Schema::create('lots', function (Blueprint $table) {
             $table->id();
             $table->string('number');
+            $table->unsignedBigInteger('operator_id');
+            $table->foreign('operator_id')->references('id')->on('operators')->onUpdate('CASCADE')->onDelete('CASCADE');
             $table->date('closed_at')->nullable();
             $table->timestamps();
             $table->softDeletes();

@@ -18,13 +18,16 @@ class ProviderController extends Controller
         $searchValue = $request->input('search');
 
         $operator = $request->input('operator');
-        $query = Provider::eloquentQuery($sortBy, $orderBy, $searchValue, [
-            "operators"
-        ]);
-        $query->where("operators.id", isset($operator) ? $operator : Operator::all(['id', 'name'])->first()->id);
-        if(!empty($searchValue)){
-            $query->orWhere("provider_operators.provider_operator_number", "LIKE", "%$searchValue%");
-        }
+        $query = Provider::whereHas('operators', function ($q) use ($operator, $searchValue) {
+            $q->where('provider_operators.operator_id', !empty($operator) ? $operator : Operator::all(['id', 'name'])->first()->id);
+            $q->where(function($q2) use ($searchValue) {
+                $q2->where("provider_operators.provider_operator_number", "LIKE", "%$searchValue%")
+                    ->orWhere("providers.id", "LIKE", "%$searchValue%")
+                    ->orWhere("providers.name", "LIKE", "%$searchValue%")
+                    ->orWhere("providers.cnes", "LIKE", "%$searchValue%");
+            });
+        });
+        $query->orderBy($sortBy, $orderBy);
         $data = $query->paginate($length);
         return new DataTableCollectionResource($data);
     }
@@ -45,7 +48,7 @@ class ProviderController extends Controller
             'operators'
         ]), [
             'name' => 'required',
-            'cnes' => 'required',
+            'cnes' => 'nullable',
             'operators' => 'required|array'
         ]);
         if ($validator->fails()) {
@@ -60,7 +63,7 @@ class ProviderController extends Controller
                 'cnes' => $validator->validated()['cnes']
             ]);
             $operators = [];
-            foreach($validator->validated()['operators'] as $operator) {
+            foreach ($validator->validated()['operators'] as $operator) {
                 $operators[$operator['operator_id']] = [
                     'provider_operator_number' => $operator['provider_operator_number']
                 ];
@@ -84,7 +87,7 @@ class ProviderController extends Controller
             'operators'
         ]), [
             'name' => 'required',
-            'cnes' => 'required',
+            'cnes' => 'nullable',
             'operators' => 'required|array'
         ]);
         if ($validator->fails()) {
@@ -100,7 +103,7 @@ class ProviderController extends Controller
                 'cnes' => $validator->validated()['cnes']
             ]);
             $operators = [];
-            foreach($validator->validated()['operators'] as $operator) {
+            foreach ($validator->validated()['operators'] as $operator) {
                 $operators[$operator['operator_id']] = [
                     'provider_operator_number' => $operator['provider_operator_number']
                 ];

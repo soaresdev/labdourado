@@ -1,37 +1,39 @@
 <template>
     <div>
         <v-dialog
-      v-model="dialog"
-      width="500"
-    >
-        <dialog-operator v-if="dialog" :operator="operator" @action="close"></dialog-operator>
-    </v-dialog>
-    <data-table
-        :columns="columns"
-        url="/dashboard/api/operators"
-        ref="table">
-        <div slot="filters" slot-scope="{ tableData, perPage }">
-        <div class="row mb-2 justify-content-between">
-            <div class="col-md-2">
-                <select class="form-control" v-model="tableData.length">
-                    <option :key="page" v-for="page in perPage">{{ page }}</option>
-                </select>
+            v-model="dialog"
+            width="500"
+        >
+            <dialog-operator v-if="dialog" :operator="operator" @action="close"></dialog-operator>
+        </v-dialog>
+        <data-table
+            :columns="columns"
+            :url="url"
+            order-dir="desc"
+            ref="table">
+            <div slot="filters" slot-scope="{ tableData, perPage }">
+                <div class="row mb-2 justify-content-between">
+                    <div class="col-md-2">
+                        <select class="form-control" v-model="tableData.length">
+                            <option :key="page" v-for="page in perPage">{{ page }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input
+                            name="name"
+                            class="form-control"
+                            v-model="tableData.search"
+                            placeholder="Pesquisar">
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <v-btn class="ma-2" small color="success" @click="open(null)">
+                            <v-icon left>mdi-plus</v-icon>
+                            Novo
+                        </v-btn>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-4">
-                <input
-                    name="name"
-                    class="form-control"
-                    v-model="tableData.search"
-                    placeholder="Pesquisar">
-            </div>
-            <div class="col-md-6 text-right">
-                <v-btn class="ma-2" small color="success"  @click="open(null)">
-                    <v-icon left>mdi-plus</v-icon> Novo
-                </v-btn>
-            </div>
-        </div>
-    </div>
-    </data-table>
+        </data-table>
     </div>
 
 </template>
@@ -39,6 +41,7 @@
 <script>
 import ActionsTable from '../../assets/js/components/ActionsTable'
 import DialogOperator from './DialogOperator'
+
 export default {
     name: 'IndexOperator',
     components: {
@@ -46,6 +49,7 @@ export default {
     },
     data() {
         return {
+            url: "/dashboard/api/operators",
             dialog: false,
             operator: {},
             columns: [
@@ -65,31 +69,31 @@ export default {
                     orderable: true,
                 },
                 {
-                label: '',
-                name: 'Editar',
-                classes: {
-                    color: 'primary',
-                    icon: 'mdi-pencil'
+                    label: '',
+                    name: 'Editar',
+                    classes: {
+                        color: 'primary',
+                        icon: 'mdi-pencil'
+                    },
+                    width: 5,
+                    orderable: false,
+                    event: "click",
+                    handler: this.open,
+                    component: ActionsTable,
                 },
-                width: 10,
-                orderable: false,
-                event: "click",
-                handler: this.open,
-                component: ActionsTable,
-            },
-            {
-                label: '',
-                name: 'Excluir',
-                classes: {
-                    color: 'error',
-                    icon: 'mdi-delete'
+                {
+                    label: '',
+                    name: 'Excluir',
+                    classes: {
+                        color: 'error',
+                        icon: 'mdi-delete'
+                    },
+                    width: 5,
+                    orderable: false,
+                    event: "click",
+                    handler: this.delete,
+                    component: ActionsTable,
                 },
-                width: 10,
-                orderable: false,
-                event: "click",
-                handler: this.delete,
-                component: ActionsTable,
-            },
             ]
         }
     },
@@ -104,9 +108,11 @@ export default {
             this.$refs.table.getData();
         },
         delete(data) {
-            this.request().delete(`/operators/${data.id}/delete`).then(response => {
+            if (window.confirm("Tem certeza que deseja excluir a operadora?\nIsso pode causar inconsistências no sistema pois ele pode estar vinculado a uma guia")) {
+                this.request().delete(`/operators/${data.id}/delete`).then(response => {
                     this.$refs.table.getData();
                 });
+            }
         }
     },
 }

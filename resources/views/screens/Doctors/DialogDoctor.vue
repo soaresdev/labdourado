@@ -2,7 +2,7 @@
   <div class="text-center">
       <v-card>
         <v-card-title class="headline grey lighten-2">
-          {{ action == 'store' ? 'Novo médico' : 'Editar médico' }}
+            {{ action === 'store' ? 'Novo médico' : 'Editar médico' }}
         </v-card-title>
 
         <v-card-text>
@@ -90,7 +90,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="$emit('action', 'close')">Fechar</v-btn>
+          <v-btn color="blue darken-1" text @click="$emit('action')">Fechar</v-btn>
           <v-btn color="blue darken-1" text @click="salvar">Salvar</v-btn>
         </v-card-actions>
       </v-card>
@@ -143,20 +143,18 @@ export default {
     },
     methods: {
         verifyAction() {
-            if(this.doctor.id){
+            if(this.doctor){
                 this.name = this.doctor.name;
                 this.cp = this.doctor.cp;
                 this.uf = this.doctor.uf;
                 this.advice_number = this.doctor.advice_number;
                 this.cbo = this.doctor.cbo;
                 this.action = 'update';
-            } else {
-                this.action = 'store';
             }
         },
         salvar() {
             this.errors = [];
-            if(this.action == 'store') {
+            if(this.action === 'store') {
                 this.request().post('/doctors/store', {
                     name: this.name,
                     cp: this.cp,
@@ -199,7 +197,7 @@ export default {
         },
         save(data) {
             if(data){
-                if(data.action == 'store') {
+                if(data.action === 'store') {
                     this.doctor.operators.push({
                         name: data.operator.text,
                         doctor_operator: {
@@ -208,17 +206,16 @@ export default {
                             doctor_id: this.doctor.id
                         }
                     })
-                } else if (data.action == 'update') {
+                } else {
                     this.doctor.operators.map(op => {
-                        if(op.doctor_operator.operator_id == data.operator.value){
+                        if(op.doctor_operator.operator_id === data.operator.value){
                             op.doctor_operator.doctor_operator_number = data.doctor_operator_number;
                         }
                         return op;
                     })
                 }
-            } else {
-                this.doctor_operator = {};
             }
+            this.doctor_operator = null;
             this.dialog = false;
         },
         open(data) {
@@ -226,7 +223,7 @@ export default {
             this.dialog = true;
         },
         remove(data) {
-            this.doctor.operators.splice(this.doctor.operators.findIndex(doc_op => doc_op.doctor_operator.doctor_operator_number == data.doctor_operator_number), 1);
+            this.doctor.operators.splice(this.doctor.operators.findIndex(doc_op => doc_op.doctor_operator.doctor_operator_number === data.doctor_operator_number), 1);
         }
     }
 }

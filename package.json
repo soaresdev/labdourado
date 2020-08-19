@@ -25,6 +25,7 @@
     "dependencies": {
         "bootstrap": "^4.5.2",
         "jquery": "^3.5.1",
+        "jquery-mask-plugin": "^1.14.16",
         "laravel-vue-datatable": "^0.5.13",
         "moment-timezone": "^0.5.31",
         "nprogress": "^0.2.0",

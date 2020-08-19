@@ -1,52 +1,74 @@
 <template>
     <div>
         <v-container fluid>
-        <v-row>
-            <v-col class="d-flex" cols="12" md="4">
-                <v-select
-                v-model="lot"
-                :items="lots"
-                filled
-                label="Lote *"
-                :item-text="lots => lots.number"
-                :item-value="lots => lots"
-                required
-                ></v-select>
-              </v-col>
-              <v-col class="d-flex" cols="12" md="4" v-if="operators">
-                  <v-select
-                      v-model="operator"
-                      :items="operators"
-                      filled
-                      label="Operadora *"
-                      :item-text="operators => operators.name"
-                      :item-value="operators => operators"
-                      required
-                  ></v-select>
-            </v-col>
-            <v-col cols="12" md="4" v-if="operator">
-                <v-text-field label="Registro ANS" readonly placeholder="Selecione uma operadora" v-model="operator.ans"></v-text-field>
-            </v-col>
-        </v-row>
-        <v-row v-if="operator">
-            <header-guide-sadt :operator="operator" ref="header"></header-guide-sadt>
-            <v-divider></v-divider>
-            <patient-guide-sadt :operator="operator" :patients="operator.patients" ref="patient"></patient-guide-sadt>
-            <v-divider></v-divider>
-            <doctor-guide-sadt :operator="operator" :doctors="operator.doctors" ref="doctor"></doctor-guide-sadt>
-            <v-divider></v-divider>
-            <request-data ref="reqdata"></request-data>
-            <v-divider></v-divider>
-            <provider-guide-sadt :providers="operator.providers" ref="provider"></provider-guide-sadt>
-            <v-divider></v-divider>
-            <treatment-data ref="treatment"></treatment-data>
-            <v-col cols="12" class="text-center">
-                <v-btn class="ma-2" color="success"  @click="save">
-                    <v-icon left>mdi-plus</v-icon> Salvar
-                </v-btn>
-            </v-col>
-        </v-row>
-    </v-container>
+            <v-row>
+                <v-col class="d-flex" cols="12" md="4">
+                    <v-autocomplete
+                        v-model="operator"
+                        dense
+                        :items="operators"
+                        filled
+                        label="Operadora *"
+                        :item-text="operators => operators.name"
+                        :item-value="operators => operators"
+                        @change="getLots"
+                        required
+                    ></v-autocomplete>
+                </v-col>
+                <v-col class="d-flex" cols="12" md="4" v-if="operator">
+                    <v-autocomplete
+                        v-model="lot"
+                        :items="lots"
+                        dense
+                        filled
+                        label="Lote *"
+                        :item-text="lots => lots.number"
+                        :item-value="lots => lots"
+                        required
+                    ></v-autocomplete>
+                </v-col>
+                <v-col cols="12" md="4" v-if="operator">
+                    <v-text-field label="Registro ANS" readonly placeholder="Selecione uma operadora"
+                                  v-model="operator.ans"></v-text-field>
+                </v-col>
+            </v-row>
+            <v-row v-if="lots.length > 0 && lot">
+                <header-guide-sadt :guide="guide" ref="header"></header-guide-sadt>
+                <v-divider></v-divider>
+                <patient-guide-sadt :guide="guide" :operator="lot.operator" :patients="lot.operator.patients"
+                                    ref="patient"></patient-guide-sadt>
+                <v-divider></v-divider>
+                <doctor-guide-sadt :guide="guide" :operator="lot.operator" :doctors="lot.operator.doctors"
+                                   ref="doctor"></doctor-guide-sadt>
+                <v-divider></v-divider>
+                <request-data :guide="guide" ref="reqdata"></request-data>
+                <v-divider></v-divider>
+                <provider-guide-sadt :guide="guide" :providers="lot.operator.providers" ref="provider"></provider-guide-sadt>
+                <v-divider></v-divider>
+                <treatment-data :guide="guide" ref="treatment"></treatment-data>
+            </v-row>
+            <v-row>
+                <v-col cols="12" class="text-center">
+                    <v-btn class="ma-2" color="success" @click="save">
+                        <v-icon left>mdi-plus</v-icon>
+                        Salvar
+                    </v-btn>
+                </v-col>
+            </v-row>
+            <v-row v-if="errors">
+                <v-col cols="12">
+                    <v-alert
+                        dense
+                        border="left"
+                        type="warning"
+                        v-for="error in errors"
+                        :key="error"
+                    >
+                        {{ error }}
+                    </v-alert>
+                </v-col>
+            </v-row>
+        </v-container>
     </div>
 </template>
 
@@ -57,6 +79,7 @@ import DoctorGuideSadt from "./DoctorGuideSadt"
 import RequestData from "./RequestData"
 import ProviderGuideSadt from "./ProviderGuideSadt"
 import TreatmentData from "./TreatmentData"
+
 export default {
     name: 'CreateGuideSadt',
     components: {
@@ -69,31 +92,67 @@ export default {
     },
     data() {
         return {
+            operators: [],
             lots: [],
+            operator: null,
             lot: null,
-            operator: null
+            guide: null,
+            errors: []
         }
     },
     created() {
-        this.getLots();
-    },
-    computed: {
-        operators() {
-            if(this.lot) {
-                this.operator = this.lot.operators[0];
-            }
-            return this.lot ? this.lot.operators : null;
-        }
+        this.verify();
     },
     methods: {
-        getLots() {
-            this.request().get('/lots/select').then(response => {
-                this.lots = response.data.data;
+        verify() {
+            if(!this.$route.params.id) {
+                this.getOperators();
+            } else {
+                this.getGuide();
+            }
+        },
+        getGuide() {
+            this.request().get(`/guides-sadt/${this.$route.params.id}`).then(response => {
+                this.guide = response.data.data[0];
+                this.operators = [this.guide.lot.operator];
+                this.operator = this.guide.lot.operator;
+                this.getLots();
             }).catch(err => {
+                this.guide = null;
+                this.operators = [];
+                this.operator = null;
                 console.log(err);
             })
         },
+        getOperators() {
+            this.request().get('/operators/select').then(response => {
+                this.operators = response.data.data;
+                if (this.operators.length > 0) {
+                    this.operator = this.operators[0];
+                    this.getLots();
+                }
+            }).catch(err => {
+                console.log(err);
+                this.operators = [];
+            })
+        },
+        getLots() {
+            return this.request().get(`/lots/select/${this.operator.id}`).then(response => {
+                this.lots = this.guide ? response.data.data.filter(lt => lt.id === this.guide.lot.id) : response.data.data;
+                if (this.lots.length > 0) {
+                    if(this.guide) {
+                        this.lot = this.lots.find(lt => lt.id === this.guide.lot.id);
+                    } else {
+                        this.lot = this.lots[this.lots.length - 1];
+                    }
+                }
+            }).catch(err => {
+                console.log(err);
+                this.lots = [];
+            });
+        },
         save() {
+            this.errors = [];
             let header = {
                 provider_number: this.$refs.header.provider_number,
                 main_number: this.$refs.header.main_number,
@@ -119,18 +178,38 @@ export default {
                 accident_indication: this.$refs.treatment.accident_indication,
                 total: this.$refs.treatment.total
             }
-            this.request().post('guides-sadt/store', {
-                lot_id: this.lot.id,
-                ...header,
-                ...patient,
-                ...doctor,
-                ...reqdata,
-                ...treatment
-            }).then(response => {
-                console.log(response.data);
-            }).catch(err => {
-                console.log(err);
-            })
+            let provider = {
+                provider_id: this.$refs.provider.provider ? this.$refs.provider.provider.id : null
+            }
+            if(!this.guide) {
+                this.request().post('guides-sadt/store', {
+                    lot_id: this.lot.id,
+                    ...header,
+                    ...patient,
+                    ...doctor,
+                    ...reqdata,
+                    ...treatment,
+                    ...provider
+                }).then(response => {
+                    this.$router.go();
+                }).catch(err => {
+                    console.log(err);
+                });
+            } else {
+                this.request().put(`guides-sadt/${this.guide.id}/update`, {
+                    lot_id: this.lot.id,
+                    ...header,
+                    ...patient,
+                    ...doctor,
+                    ...reqdata,
+                    ...treatment,
+                    ...provider
+                }).then(response => {
+                    this.$router.push({name: 'guides-sadt.index'})
+                }).catch(err => {
+                    console.log(err);
+                });
+            }
         }
     }
 }

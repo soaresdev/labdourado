@@ -4,47 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use JamesDordoy\LaravelVueDatatable\Traits\LaravelVueDatatableTrait;
 class Lot extends Model
 {
-    use SoftDeletes, LaravelVueDatatableTrait;
+    use SoftDeletes;
 
-    protected $with = ['operators'];
-
-    protected $dataTableColumns = [
-        'id' => [
-            'searchable' => false,
-            'orderable' => false,
-        ],
-        'number' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-        'closed_at' => [
-            'searchable' => true,
-            'orderable' => true,
-        ],
-    ];
-
-    protected $dataTableRelationships = [
-        "belongsToMany" => [
-            "operators" => [
-                "model" => Operator::class,
-                "pivot" => [
-                    "table_name" => "lot_operators",
-                    "primary_key" => "id",
-                    "foreign_key" => "operator_id",
-                    "local_key" => "lot_id",
-                ],
-                "columns" => [
-                    'name' => [
-                        'searchable' => true,
-                        'orderable' => true,
-                    ],
-                ]
-            ],
-        ]
-    ];
+    protected $with = ['operator'];
+    protected $withCount = ['guides'];
 
     /**
      * The attributes that are mass assignable.
@@ -53,6 +18,11 @@ class Lot extends Model
      */
     protected $fillable = [
         'number', 'closed_at'
+    ];
+
+    protected $appends = [
+        'total',
+        'total_formatted'
     ];
 
     /**
@@ -66,14 +36,32 @@ class Lot extends Model
         'updated_at' => 'datetime:d/m/Y',
     ];
 
-    public function operators()
+    public function operator()
     {
-        return $this->belongsToMany(Operator::class, 'lot_operators')->as('lot_operator');
+        return $this->belongsTo(Operator::class);
     }
 
     public function guides()
     {
         return $this->hasMany(GuideSadt::class);
+    }
+
+    public function getTotalAttribute()
+    {
+        $total = 0;
+        foreach ($this->guides()->get() as $guide) {
+            $total += !empty($guide->total) ? $guide->total : 0;
+        }
+        return $total;
+    }
+
+    public function getTotalFormattedAttribute()
+    {
+        $total = 0;
+        foreach ($this->guides()->get() as $guide) {
+            $total += !empty($guide->total) ? $guide->total : 0;
+        }
+        return 'R$' . number_format($total, 2, ',', '.');
     }
 
 }

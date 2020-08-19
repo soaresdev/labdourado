@@ -12,9 +12,35 @@ class OperatorSeeder extends Seeder
      */
     public function run()
     {
-        Operator::create([
+        $agros = Operator::create([
             'name' => 'Agros',
             'ans' => '368920',
+        ]);
+        //Prestadora
+        $lab = \App\Provider::create([
+            'name' => 'Laboratório de Análises Clínicas Dourado LTDA',
+            'cnes' => '9629130'
+        ]);
+        $agros->providers()->save($lab, ['provider_operator_number' => '3392']);
+        //Paciente
+        $maria = \App\Patient::create([
+            'name' => 'Maria Amália de Assis Alves'
+        ]);
+        $agros->patients()->save($maria, ['wallet_number' => '030953031', 'wallet_expiration' => '9999-12-31']);
+        //Médico
+        $marcelo = \App\Doctor::create([
+            'name' => 'Marcelo Mageste Rodrigues',
+            'cp' => '06',
+            'advice_number' => '58822',
+            'uf' => '31',
+            'cbo' => '225109'
+        ]);
+        $agros->doctors()->save($marcelo, [
+            'doctor_operator_number' => '3311'
+        ]);
+        //Lot teste
+        $agros->lots()->create([
+            'number' => '1'
         ]);
     }
 }

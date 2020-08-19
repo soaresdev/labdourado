@@ -26,12 +26,29 @@
 import {cas} from "./selects"
 export default {
     name: "request-data",
+    props: {
+      guide: {
+          tyoe: Object
+      }
+    },
+    created() {
+        this.verify();
+    },
     data() {
         return {
             cas,
             character_treatment: '1',
             request_date: '',
             clinical_indication: ''
+        }
+    },
+    methods: {
+        verify() {
+            if(this.guide) {
+                this.character_treatment = this.guide.character_treatment;
+                this.request_date = this.guide.request_date;
+                this.clinical_indication = this.guide.clinical_indication;
+            }
         }
     }
 }
