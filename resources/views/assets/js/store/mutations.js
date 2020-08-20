@@ -3,6 +3,9 @@ import * as types from './mutation-types';
 import default_state from './state';
 
 export default {
+    [types.DRAWER](state, config) {
+        state.drawer = !state.drawer;
+    },
     [types.SNACKBAR](state, config) {
         state.snackbar = {
           visible: true,

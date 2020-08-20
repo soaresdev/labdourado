@@ -95,7 +95,8 @@
 
 var _this = this;
 
-var staticCacheName = "pwa-v" + new Date().getTime(); // Cache on install
+var staticCacheName = "pwa-v" + new Date().getTime();
+var filesToCache = ['/css/app.css', '/css/login.css', '/css/reset.css', '/fonts/vendor/@mdi/materialdesignicons-webfont.eot', '/fonts/vendor/@mdi/materialdesignicons-webfont.ttf', '/fonts/vendor/@mdi/materialdesignicons-webfont.woff', '/fonts/vendor/@mdi/materialdesignicons-webfont.woff2', '/js/app.js', '/js/login.js', '/images/logo.png', '/images/icon/icon-72x72.png', '/images/icon/icon-96x96.png', '/images/icon/icon-128x128.png', '/images/icon/icon-144x144.png', '/images/icon/icon-152x152.png', '/images/icon/icon-192x192.png', '/images/icon/icon-384x384.png', '/images/icon/icon-512x512.png']; // Cache on install
 
 self.addEventListener("install", function (event) {
   _this.skipWaiting();

@@ -136,9 +136,9 @@ export default {
         },
         redirect(data) {
             if (data) {
-                this.$router.push({name: 'guides-sadt.alter', params: {id: data.id}})
+                this.$router.push({name: 'guides-sadt.edit', params: {id: data.id}})
             } else {
-                this.$router.push({name: 'guides-sadt.alter'})
+                this.$router.push({name: 'guides-sadt.create'})
             }
         },
         close() {

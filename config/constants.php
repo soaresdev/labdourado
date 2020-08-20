@@ -2,7 +2,8 @@
 
 return [
     'dashboard' => [
-        'path' => 'dashboard'
+        'path' => 'dashboard',
+        'version' => '0.0.1',
     ],
     'messages' => [
         'error' => [

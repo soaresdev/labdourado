@@ -31,7 +31,7 @@
                 <v-alert
                     border="left"
                     colored-border
-                    color="danger accent-4"
+                    color="black accent-4"
                     elevation="2"
                     class="text-center"
                 >
@@ -70,7 +70,7 @@
                 <v-alert
                     border="left"
                     colored-border
-                    color="indigo accent-4"
+                    color="error accent-4"
                     elevation="2"
                     class="text-center"
                 >
@@ -108,7 +108,7 @@
                         >
                             mdi-currency-usd
                         </v-icon>
-                        <span class="title font-weight-light">Lotes no mês de {{ actual_month }}</span>
+                        <span class="title font-weight-light">Lotes no mês de {{ actual_month.charAt(0).toUpperCase() + actual_month.slice(1) }}</span>
                     </v-card-title>
                     <v-card-text class="text-h6 font-weight-bold">
                         <p>Valor de todas as guias abertas: {{ lot.total }}</p>

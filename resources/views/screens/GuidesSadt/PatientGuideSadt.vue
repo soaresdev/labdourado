@@ -101,20 +101,20 @@ export default {
     },
     methods: {
         verify() {
-            if(this.guide) {
+            if (this.guide) {
                 this.patient = this.guide.patient;
                 Object.assign(this.patient, {patient_operator: this.guide.patient.operators[0].patient_operator});
                 this.rn = this.guide.rn;
             }
         },
         save(data) {
-            if(data) {
+            if (data) {
                 this.patient = data;
                 this.patients.push(this.patient);
             }
             this.dialog = false;
         },
-        open(){
+        open() {
             this.new_patient = {
                 operators: []
             };

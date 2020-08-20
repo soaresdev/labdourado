@@ -16,7 +16,8 @@
                 <v-text-field type="date" label="22 - Data da Solicitação" v-model="request_date"></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-                <v-textarea rows="1" label="23 - Indicação Clínica" placeholder="Indicação Clínica" v-model="clinical_indication"></v-textarea>
+                <v-textarea rows="1" label="23 - Indicação Clínica" placeholder="Indicação Clínica"
+                            v-model="clinical_indication"></v-textarea>
             </v-col>
         </v-row>
     </v-container>
@@ -24,12 +25,13 @@
 
 <script>
 import {cas} from "./selects"
+
 export default {
     name: "request-data",
     props: {
-      guide: {
-          tyoe: Object
-      }
+        guide: {
+            tyoe: Object
+        }
     },
     created() {
         this.verify();
@@ -44,7 +46,7 @@ export default {
     },
     methods: {
         verify() {
-            if(this.guide) {
+            if (this.guide) {
                 this.character_treatment = this.guide.character_treatment;
                 this.request_date = this.guide.request_date;
                 this.clinical_indication = this.guide.clinical_indication;

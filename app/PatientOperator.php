@@ -24,6 +24,6 @@ class PatientOperator extends Pivot
 
     public function getWalletExpirationFormattedAttribute()
     {
-        return Carbon::createFromFormat('Y-m-d', $this->attributes['wallet_expiration'])->format('d/m/Y');
+        return !empty($this->attributes['wallet_expiration']) ? Carbon::createFromFormat('Y-m-d', $this->attributes['wallet_expiration'])->format('d/m/Y') : null;
     }
 }

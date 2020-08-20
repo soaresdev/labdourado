@@ -83,8 +83,7 @@ export default {
         operators_select() {
             if (this.provider_operator) {
                 return this.operators.filter(op => op.value === this.provider_operator.operator_id);
-            }
-            if (this.operators_provider.length > 0) {
+            } else if (this.operators_provider.length > 0) {
                 return this.operators.filter(op => !this.operators_provider.find(op_pv => op.value === op_pv.operator_id));
             } else {
                 return this.operators;

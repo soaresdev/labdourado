@@ -54,7 +54,7 @@ export default {
     },
     methods: {
         verify() {
-            if(this.guide) {
+            if (this.guide) {
                 this.type_treatment = this.guide.type_treatment;
                 this.accident_indication = this.guide.accident_indication;
                 this.total = this.guide.total_guide;

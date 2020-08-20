@@ -43,11 +43,12 @@
                 <v-divider></v-divider>
                 <request-data :guide="guide" ref="reqdata"></request-data>
                 <v-divider></v-divider>
-                <provider-guide-sadt :guide="guide" :providers="lot.operator.providers" ref="provider"></provider-guide-sadt>
+                <provider-guide-sadt :guide="guide" :providers="lot.operator.providers"
+                                     ref="provider"></provider-guide-sadt>
                 <v-divider></v-divider>
                 <treatment-data :guide="guide" ref="treatment"></treatment-data>
             </v-row>
-            <v-row>
+            <v-row v-if="lots.length > 0 && lot">
                 <v-col cols="12" class="text-center">
                     <v-btn class="ma-2" color="success" @click="save">
                         <v-icon left>mdi-plus</v-icon>
@@ -105,7 +106,7 @@ export default {
     },
     methods: {
         verify() {
-            if(!this.$route.params.id) {
+            if (!this.$route.params.id) {
                 this.getOperators();
             } else {
                 this.getGuide();
@@ -133,6 +134,7 @@ export default {
                 }
             }).catch(err => {
                 console.log(err);
+                this.operator = null;
                 this.operators = [];
             })
         },
@@ -140,7 +142,7 @@ export default {
             return this.request().get(`/lots/select/${this.operator.id}`).then(response => {
                 this.lots = this.guide ? response.data.data.filter(lt => lt.id === this.guide.lot.id) : response.data.data;
                 if (this.lots.length > 0) {
-                    if(this.guide) {
+                    if (this.guide) {
                         this.lot = this.lots.find(lt => lt.id === this.guide.lot.id);
                     } else {
                         this.lot = this.lots[this.lots.length - 1];
@@ -149,6 +151,7 @@ export default {
             }).catch(err => {
                 console.log(err);
                 this.lots = [];
+                this.lot = null;
             });
         },
         save() {
@@ -181,7 +184,7 @@ export default {
             let provider = {
                 provider_id: this.$refs.provider.provider ? this.$refs.provider.provider.id : null
             }
-            if(!this.guide) {
+            if (!this.guide) {
                 this.request().post('guides-sadt/store', {
                     lot_id: this.lot.id,
                     ...header,

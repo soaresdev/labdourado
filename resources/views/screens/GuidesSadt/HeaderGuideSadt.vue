@@ -51,7 +51,7 @@ export default {
     },
     methods: {
         verify() {
-            if(this.guide) {
+            if (this.guide) {
                 this.provider_number = this.guide.provider_number;
                 this.main_number = this.guide.main_number;
                 this.permission_date = this.guide.permission_date;

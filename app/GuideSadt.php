@@ -171,8 +171,8 @@ class GuideSadt extends Model
 
     public function setTotalAttribute($value)
     {
-        if (!empty($value)) {
-            $this->attributes['total'] = str_replace(',', '.', str_replace('.', '.', $value));
+        if(!empty($value)){
+            $this->attributes['total'] = floatval(str_replace(',', '.', str_replace('.', '', $value)));
         }
     }
 

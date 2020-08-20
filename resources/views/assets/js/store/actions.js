@@ -4,5 +4,7 @@ export const CLEAR_STATE = ({ commit }) => commit(types.CLEAR_STATE);
 export const SHOW_SNACKBAR = ({ commit }, config) => commit(types.SNACKBAR, config);
 export const HIDE_SNACKBAR = ({ commit }) => commit(types.SNACKBAR, { visible: false });
 
+export const TOGGLE_DRAWER = ({commit}, config) => commit(types.DRAWER, config);
+
 export const SET_ITEMS = ({ commit }, items) => commit(types.SET_ITEMS, items);
 export const UNSET_ITEMS = ({ commit }) => commit(types.UNSET_ITEMS);

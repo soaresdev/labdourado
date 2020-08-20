@@ -56,6 +56,9 @@ class GuideSadtController extends Controller
                 ->getResponse();
         } catch (\Exception $e) {
             return $this->message->error()
+                ->setData([
+                    $e
+                ])
                 ->getResponse();
         }
     }

@@ -7,10 +7,11 @@
                 nav
                 class="py-0"
             >
+                <v-img class="mx-auto" :src="dashboard.app_url + '/images/icon/icon-144x144.png'" width="100"></v-img>
                 <v-list-item two-line :to="{ name: 'home' }">
                     <v-list-item-content>
-                        <v-list-item-title>Laboratório Dourado</v-list-item-title>
-                        <v-list-item-subtitle>{{ user.name }}</v-list-item-subtitle>
+                        <v-list-item-title>{{ dashboard.app_name }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ dashboard.user.name }}</v-list-item-subtitle>
                     </v-list-item-content>
                 </v-list-item>
 
@@ -31,6 +32,9 @@
                 </v-list-item>
             </v-list>
             <template v-slot:append>
+                <div class="text-center">
+                    <p class="text-white">Versão: {{ dashboard.app_version }}</p>
+                </div>
                 <div class="pa-2">
                     <v-btn block @click="logout">Sair</v-btn>
                 </div>
@@ -40,7 +44,7 @@
         <v-app-bar app dense
                    dark>
             <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-            <v-toolbar-title>Laboratório Dourado</v-toolbar-title>
+            <v-toolbar-title>{{dashboard.app_name}}</v-toolbar-title>
             <v-spacer></v-spacer>
         </v-app-bar>
 
@@ -76,8 +80,8 @@ export default {
     name: 'App',
     data() {
         return {
-            user: Dashboard.user,
-            drawer: false,
+            dashboard: Dashboard,
+            drawer: true,
             items: [
                 {title: 'Usuários', icon: 'mdi-account', name: 'users.index'},
                 {title: 'Prestadores', icon: 'mdi-domain', name: 'providers.index'},

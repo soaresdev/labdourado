@@ -30,7 +30,9 @@ class HomeController extends Controller
     {
         return [
             'user' => Auth::user(),
+            'app_name' => config('app.name'),
             'app_url' => config('app.url'),
+            'app_version' => config('constants.dashboard.version'),
             'path' => config('constants.dashboard.path')
         ];
     }

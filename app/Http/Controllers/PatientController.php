@@ -57,7 +57,7 @@ class PatientController extends Controller
             foreach($validator->validated()['operators'] as $operator) {
                 $operators[$operator['operator_id']] = [
                     'wallet_number' => $operator['wallet_number'],
-                    'wallet_expiration' => $operator['wallet_expiration'],
+                    'wallet_expiration' => !empty($operator['wallet_expiration']) ? $operator['wallet_expiration'] : null
                 ];
             }
             $patient->operators()->sync($operators);
@@ -98,7 +98,7 @@ class PatientController extends Controller
             foreach($validator->validated()['operators'] as $operator) {
                 $operators[$operator['operator_id']] = [
                     'wallet_number' => $operator['wallet_number'],
-                    'wallet_expiration' => $operator['wallet_expiration'],
+                    'wallet_expiration' => !empty($operator['wallet_expiration']) ? $operator['wallet_expiration'] : null
                 ];
             }
             $patient->operators()->sync($operators);

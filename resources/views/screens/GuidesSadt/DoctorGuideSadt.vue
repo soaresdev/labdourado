@@ -120,7 +120,7 @@ export default {
     },
     methods: {
         verify() {
-            if(this.guide) {
+            if (this.guide) {
                 this.doctor = this.guide.doctor;
                 Object.assign(this.doctor, {doctor_operator: this.guide.doctor.operators[0].doctor_operator});
             }

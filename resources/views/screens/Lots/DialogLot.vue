@@ -38,10 +38,14 @@
                     </v-row>
                     <v-row v-if="this.lot">
                         <v-col cols="12" md="6">
-                            <v-btn color="success" @click="toggle">{{ lot_selected.closed_at ? 'Abrir faturamento' : 'Fechar faturamento' }}</v-btn>
+                            <v-btn color="success" @click="toggle">
+                                {{ lot_selected.closed_at ? 'Abrir faturamento' : 'Fechar faturamento' }}
+                            </v-btn>
                         </v-col>
                         <v-col cols="12" md="6">
-                            <v-btn :disabled="!lot_selected.closed_at" color="primary darken-1" @click="xml">Exportar XML</v-btn>
+                            <v-btn :disabled="!lot_selected.closed_at" color="primary darken-1" @click="xml">Exportar
+                                XML
+                            </v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -84,7 +88,7 @@ export default {
     },
     computed: {
         operators_select() {
-            if(this.lot) {
+            if (this.lot) {
                 return this.operators.filter(op => op.value === this.lot.operator.id);
             } else {
                 return this.operators;

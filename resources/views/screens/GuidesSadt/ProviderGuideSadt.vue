@@ -14,13 +14,16 @@
                 ></v-autocomplete>
             </v-col>
             <v-col cols="12" md="3">
-                <v-text-field label="29 - Cód. na Operadora" placeholder="Cód. na Operadora" v-model="provider.provider_operator.provider_operator_number" readonly></v-text-field>
+                <v-text-field label="29 - Cód. na Operadora" placeholder="Cód. na Operadora"
+                              v-model="provider.provider_operator.provider_operator_number" readonly></v-text-field>
             </v-col>
             <v-col cols="12" md="3">
-                <v-text-field label="30 - Nome do Contratado" placeholder="Nome do Contratado" v-model="provider.name" readonly></v-text-field>
+                <v-text-field label="30 - Nome do Contratado" placeholder="Nome do Contratado" v-model="provider.name"
+                              readonly></v-text-field>
             </v-col>
             <v-col cols="12" md="3">
-                <v-text-field label="31 - Cód. CNES" placeholder="Cód. CNES" v-model="provider.cnes" readonly></v-text-field>
+                <v-text-field label="31 - Cód. CNES" placeholder="Cód. CNES" v-model="provider.cnes"
+                              readonly></v-text-field>
             </v-col>
         </v-row>
     </v-container>
@@ -44,11 +47,11 @@ export default {
         }
     },
     created() {
-      this.verify();
+        this.verify();
     },
     methods: {
         verify() {
-            if(this.guide) {
+            if (this.guide) {
                 this.provider = this.guide.provider;
                 Object.assign(this.provider, {provider_operator: this.guide.provider.operators[0].provider_operator});
             } else {
