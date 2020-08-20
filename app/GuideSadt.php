@@ -9,7 +9,7 @@ class GuideSadt extends Model
 {
     use SoftDeletes;
 
-    protected $with = ['lot', 'patient', 'doctor', 'provider'];
+    protected $with = ['lot', 'patient', 'doctor', 'provider', 'procedures'];
     /**
      * The attributes that are mass assignable.
      *
@@ -33,7 +33,8 @@ class GuideSadt extends Model
         'clinical_indication',
         'type_treatment',
         'accident_indication',
-        'total'
+        'total',
+        'observation'
     ];
 
     protected $appends = [
@@ -204,5 +205,19 @@ class GuideSadt extends Model
     public function provider()
     {
         return $this->belongsTo(Provider::class);
+    }
+
+    public function procedures()
+    {
+        return $this->belongsToMany(Procedure::class, 'guide_procedures', 'guide_id', 'procedure_id')->using(GuideProcedure::class)
+            ->as('guide_procedure')
+            ->withPivot([
+                'request_amount',
+                'permission_amount',
+                'reduction_factor',
+                'execution_date',
+                'unity_price',
+                'total_price'
+            ]);
     }
 }

@@ -73,6 +73,7 @@ class CreateGuideSadtsTable extends Migration
                 '9'
             ])->nullable()->default('9');
             $table->unsignedFloat('total', 10, 2)->nullable();
+            $table->text('observation')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

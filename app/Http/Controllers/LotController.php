@@ -191,7 +191,7 @@ class LotController extends Controller
                     . Str::upper(Str::slug($guide->patient->name, ' ')) . Str::upper(Str::slug($guide->patient->cns, ' ')) . $guide->doctor->operators->where('doctor_operator.operator_id', $lot->operator->id)->first()->doctor_operator->doctor_operator_number
                     . Str::upper(Str::slug($guide->doctor->name, ' ')) . Str::upper(Str::slug($guide->doctor->name, ' ')) . $guide->doctor->cp . $guide->doctor->advice_number . $guide->doctor->uf . $guide->doctor->cbo
                     . $guide->request_date . $guide->character_treatment . Str::upper(Str::slug($guide->clinical_indication, ' ')) . $guide->provider->operators->where('provider_operator.operator_id', $lot->operator->id)->first()->provider_operator->provider_operator_number
-                    . Str::upper(Str::slug($guide->provider->name, ' ')) . $guide->provider->cnes . $guide->type_treatment . $guide->accident_indication . $total;
+                    . Str::upper(Str::slug($guide->provider->name, ' ')) . $guide->provider->cnes . $guide->type_treatment . $guide->accident_indication . Str::upper(Str::slug($guide->observation, ' ')) . $total;
                 $array['ans:prestadorParaOperadora']['ans:loteGuias']['ans:guiasTISS']['ans:guiaSP-SADT'][] = [
                     'ans:cabecalhoGuia' => [
                         'ans:registroANS' => $lot->operator->ans,
@@ -239,6 +239,7 @@ class LotController extends Controller
                         'ans:tipoAtendimento' => $guide->type_treatment,
                         'ans:indicacaoAcidente' => $guide->accident_indication
                     ],
+                    'ans:observacao' => $guide->observation,
                     'ans:valorTotal' => [
                         'ans:valorTotalGeral' => !empty($guide->total) ? $guide->total : '0.00'
                     ]
@@ -264,6 +265,9 @@ class LotController extends Controller
                 if(empty($guide->patient->cns)) {
                     unset($array['ans:prestadorParaOperadora']['ans:loteGuias']['ans:guiasTISS']['ans:guiaSP-SADT'][$cont]['ans:dadosBeneficiario']['ans:numeroCNS']);
                 }
+                if(empty($guide->observation)) {
+                    unset($array['ans:prestadorParaOperadora']['ans:loteGuias']['ans:guiasTISS']['ans:guiaSP-SADT'][$cont]['ans:observacao']);
+                }
                 $cont++;
             }
             $array['ans:epilogo']['ans:hash'] = md5($hash);
@@ -284,7 +288,6 @@ class LotController extends Controller
             return $this->message->error()
                 ->getResponse();
         } catch (\Exception $e) {
-            dd($e);
             return $this->message->error()
                 ->getResponse();
         }

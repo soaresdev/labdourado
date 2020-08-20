@@ -50,7 +50,15 @@ class GuideSadtController extends Controller
     public function store(Request $request)
     {
         try {
-            GuideSadt::create($request->all());
+            $guide = GuideSadt::create($request->all());
+            $procedures = [];
+            foreach($request->all()['guide_procedures'] as $procedure) {
+                $procedures[$procedure['guide_procedure']['procedure_id']] = [
+                    'permission_amount' => $procedure['guide_procedure']['permission_amount'],
+                    'request_amount' => $procedure['guide_procedure']['request_amount']
+                ];
+            }
+            $guide->procedures()->sync($procedures);
             return $this->message->success('Guia' . config('constants.messages.success.created'))
                 ->setStatus(201)
                 ->getResponse();

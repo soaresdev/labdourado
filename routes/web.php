@@ -83,6 +83,9 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
                 Route::delete('/{id}/delete', 'GuideSadtController@delete')->name('guidesSadt.delete');
             });
         });
+        Route::prefix('/procedures')->group(function () {
+            Route::get('/', 'ProcedureController@indexData')->name('procedures.indexData');
+        });
         Route::get('/resume', 'HomeController@getResume')->name('resume');
     });
     Route::get('/{view?}', 'HomeController')->where('view', '(.*)')->name('home');

@@ -20,11 +20,11 @@
           content="{{ config('pwa.manifest.display') == 'standalone' ? 'yes' : 'no' }}">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="{{ config('pwa.manifest.short_name') }}">
-    <link rel="apple-touch-icon" href="{{ url(asset('assets/images/icon/icon-144x144.png')) }}">
+    <link rel="apple-touch-icon" href="{{ url(asset('images/icon/icon-144x144.png')) }}">
 
     <!-- Tile for Win8 -->
     <meta name="msapplication-TileColor" content="{{ config('pwa.manifest.background_color') }}">
-    <meta name="msapplication-TileImage" content="{{ url(asset('assets/images/icon/icon-144x144.png')) }}">
+    <meta name="msapplication-TileImage" content="{{ url(asset('images/icon/icon-144x144.png')) }}">
 
     <script type="text/javascript">
         // Initialize the service worker

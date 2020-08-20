@@ -34,19 +34,15 @@
             </v-row>
             <v-row v-if="lots.length > 0 && lot">
                 <header-guide-sadt :guide="guide" ref="header"></header-guide-sadt>
-                <v-divider></v-divider>
                 <patient-guide-sadt :guide="guide" :operator="lot.operator" :patients="lot.operator.patients"
                                     ref="patient"></patient-guide-sadt>
-                <v-divider></v-divider>
                 <doctor-guide-sadt :guide="guide" :operator="lot.operator" :doctors="lot.operator.doctors"
                                    ref="doctor"></doctor-guide-sadt>
-                <v-divider></v-divider>
                 <request-data :guide="guide" ref="reqdata"></request-data>
-                <v-divider></v-divider>
                 <provider-guide-sadt :guide="guide" :providers="lot.operator.providers"
                                      ref="provider"></provider-guide-sadt>
-                <v-divider></v-divider>
                 <treatment-data :guide="guide" ref="treatment"></treatment-data>
+                <procedures-guide-sadt :guide="guide" ref="procedures_selected"></procedures-guide-sadt>
             </v-row>
             <v-row v-if="lots.length > 0 && lot">
                 <v-col cols="12" class="text-center">
@@ -80,6 +76,7 @@ import DoctorGuideSadt from "./DoctorGuideSadt"
 import RequestData from "./RequestData"
 import ProviderGuideSadt from "./ProviderGuideSadt"
 import TreatmentData from "./TreatmentData"
+import ProceduresGuideSadt from "./ProceduresGuideSadt"
 
 export default {
     name: 'CreateGuideSadt',
@@ -89,7 +86,8 @@ export default {
         DoctorGuideSadt,
         RequestData,
         ProviderGuideSadt,
-        TreatmentData
+        TreatmentData,
+        ProceduresGuideSadt
     },
     data() {
         return {
@@ -168,9 +166,15 @@ export default {
                 patient_id: this.$refs.patient.patient ? this.$refs.patient.patient.id : null,
                 rn: this.$refs.patient.rn
             };
+            if (!patient.patient_id) {
+                this.errors.push('Selecione um paciente!');
+            }
             let doctor = {
                 doctor_id: this.$refs.doctor.doctor ? this.$refs.doctor.doctor.id : null
             };
+            if (!doctor.doctor_id) {
+                this.errors.push('Selecione um médico!');
+            }
             let reqdata = {
                 character_treatment: this.$refs.reqdata.character_treatment,
                 request_date: this.$refs.reqdata.request_date,
@@ -179,39 +183,50 @@ export default {
             let treatment = {
                 type_treatment: this.$refs.treatment.type_treatment,
                 accident_indication: this.$refs.treatment.accident_indication,
-                total: this.$refs.treatment.total
+                total: this.$refs.treatment.total,
+                observation: this.$refs.treatment.observation
             }
             let provider = {
                 provider_id: this.$refs.provider.provider ? this.$refs.provider.provider.id : null
             }
-            if (!this.guide) {
-                this.request().post('guides-sadt/store', {
-                    lot_id: this.lot.id,
-                    ...header,
-                    ...patient,
-                    ...doctor,
-                    ...reqdata,
-                    ...treatment,
-                    ...provider
-                }).then(response => {
-                    this.$router.go();
-                }).catch(err => {
-                    console.log(err);
-                });
-            } else {
-                this.request().put(`guides-sadt/${this.guide.id}/update`, {
-                    lot_id: this.lot.id,
-                    ...header,
-                    ...patient,
-                    ...doctor,
-                    ...reqdata,
-                    ...treatment,
-                    ...provider
-                }).then(response => {
-                    this.$router.push({name: 'guides-sadt.index'})
-                }).catch(err => {
-                    console.log(err);
-                });
+            if (!provider.provider_id) {
+                this.errors.push('Selecione um prestador');
+            }
+            let procedures = {
+                guide_procedures: this.$refs.procedures_selected.guide_procedures
+            }
+            if (patient.patient_id && doctor.doctor_id && provider.provider_id) {
+                if (!this.guide) {
+                    this.request().post('guides-sadt/store', {
+                        lot_id: this.lot.id,
+                        ...header,
+                        ...patient,
+                        ...doctor,
+                        ...reqdata,
+                        ...treatment,
+                        ...provider,
+                        ...procedures
+                    }).then(response => {
+                        this.$router.go();
+                    }).catch(err => {
+                        console.log(err);
+                    });
+                } else {
+                    this.request().put(`guides-sadt/${this.guide.id}/update`, {
+                        lot_id: this.lot.id,
+                        ...header,
+                        ...patient,
+                        ...doctor,
+                        ...reqdata,
+                        ...treatment,
+                        ...provider,
+                        ...procedures
+                    }).then(response => {
+                        this.$router.push({name: 'guides-sadt.index'})
+                    }).catch(err => {
+                        console.log(err);
+                    });
+                }
             }
         }
     }

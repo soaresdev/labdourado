@@ -26,6 +26,9 @@
             <v-col cols="12" md="4">
                 <v-text-field label="65 - Total Geral (R$)" v-model="total"></v-text-field>
             </v-col>
+            <v-col cols="12">
+                <v-textarea rows="3" label="58 - Observação/Justificativa" placeholder="Observação/Justificativa" v-model="observation"></v-textarea>
+            </v-col>
         </v-row>
     </v-container>
 </template>
@@ -49,7 +52,8 @@ export default {
             ais,
             type_treatment: '05',
             accident_indication: '9',
-            total: ''
+            total: '',
+            observation: ''
         }
     },
     methods: {
@@ -58,6 +62,7 @@ export default {
                 this.type_treatment = this.guide.type_treatment;
                 this.accident_indication = this.guide.accident_indication;
                 this.total = this.guide.total_guide;
+                this.observation = this.guide.observation;
             }
         }
     }
