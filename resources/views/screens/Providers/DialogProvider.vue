@@ -42,20 +42,20 @@
                     <thead>
                     <tr>
                         <th class="text-left">Operadora</th>
-                        <th class="text-left">Código na operadora</th>
+                        <th class="text-left">Cód. na operadora</th>
                         <th class="text-left">Editar</th>
                         <th class="text-left">Excluir</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in provider_operators" :key="item.operator_id">
-                        <td>{{ item.operator }}</td>
-                        <td>{{ item.provider_operator_number }}</td>
+                    <tr v-for="(item, idx) in provider_operators" :key="idx">
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.provider_operator.provider_operator_number }}</td>
                         <td>
                             <v-icon @click="open(item)">mdi-pencil</v-icon>
                         </td>
                         <td>
-                            <v-icon @click="remove(item)">mdi-delete</v-icon>
+                            <v-icon @click="remove(idx)">mdi-delete</v-icon>
                         </td>
                     </tr>
                     </tbody>
@@ -91,7 +91,9 @@ export default {
     props: {
         provider: {
             type: Object,
-            default: () => ({})
+            default: () => ({
+                operators: []
+            })
         },
         operators: {
             type: Array,
@@ -100,20 +102,17 @@ export default {
     },
     computed: {
         provider_operators() {
-            return this.provider.operators.map(pv_op => {
-                pv_op.provider_operator.operator = pv_op.name;
-                return pv_op.provider_operator;
-            })
+            return this.provider.operators;
         }
     },
     data() {
         return {
             dialog: false,
+            action: 'store',
+            errors: [],
             name: '',
             cnes: '',
-            action: 'store',
             provider_operator: null,
-            errors: []
         }
     },
     created() {
@@ -124,12 +123,11 @@ export default {
             if (this.provider.id) {
                 this.name = this.provider.name;
                 this.cnes = this.provider.cnes;
-                this.action = 'update'
-            } else {
-                this.action = 'store'
+                this.action = 'update';
             }
         },
         salvar() {
+            this.toggleLoading();
             this.errors = [];
             if (this.action === 'store') {
                 this.request().post('/providers/store', {
@@ -142,6 +140,8 @@ export default {
                     if (err.response.data.errors) {
                         this.errors = err.response.data.errors;
                     }
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             } else {
                 this.request().put(`/providers/${this.provider.id}/update`, {
@@ -154,6 +154,8 @@ export default {
                     if (err.response.data.errors) {
                         this.errors = err.response.data.errors;
                     }
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             }
         },
@@ -161,16 +163,16 @@ export default {
             if (data) {
                 if (data.action === 'store') {
                     this.provider.operators.push({
-                        name: data.operator.text,
+                        ...data.operator,
                         provider_operator: {
-                            operator_id: data.operator.value,
+                            provider_id: this.provider.id,
+                            operator_id: data.operator.id,
                             provider_operator_number: data.provider_operator_number,
-                            provider_id: this.provider.id
                         }
-                    })
+                    });
                 } else {
                     this.provider.operators.map(op => {
-                        if (op.provider_operator.operator_id === data.operator.value) {
+                        if (op.provider_operator.operator_id === data.operator.id) {
                             op.provider_operator.provider_operator_number = data.provider_operator_number;
                         }
                         return op;
@@ -184,8 +186,8 @@ export default {
             this.provider_operator = data;
             this.dialog = true;
         },
-        remove(data) {
-            this.provider.operators.splice(this.provider.operators.findIndex(pv_op => pv_op.provider_operator.provider_operator_number === data.provider_operator_number), 1);
+        remove(index) {
+            this.provider.operators.splice(index, 1);
         }
     }
 }

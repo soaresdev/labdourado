@@ -9,15 +9,14 @@ class Patient extends Model
 {
     use SoftDeletes;
 
-    protected $with = ['operators'];
-
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'cns'
+        'name',
+        'cns'
     ];
 
     /**
@@ -32,11 +31,15 @@ class Patient extends Model
 
     public function operators()
     {
-        return $this->belongsToMany(Operator::class, 'patient_operators', 'patient_id', 'operator_id')->using(PatientOperator::class)
+        return $this->belongsToMany(Operator::class, 'patient_operators')
+            ->using(PatientOperator::class)
             ->as('patient_operator')
             ->withPivot([
+                'patient_id',
+                'operator_id',
                 'wallet_number',
-                'wallet_expiration',
-            ]);
+                'wallet_expiration'
+            ])
+            ->withTimestamps();
     }
 }

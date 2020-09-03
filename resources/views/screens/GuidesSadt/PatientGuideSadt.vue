@@ -78,8 +78,9 @@ export default {
         operators() {
             return [
                 {
-                    text: this.operator.name,
-                    value: this.operator.id
+                    id: this.operator.id,
+                    name: this.operator.name,
+                    ans: this.operator.ans
                 }
             ];
         },
@@ -101,15 +102,20 @@ export default {
     },
     methods: {
         verify() {
-            if (this.guide) {
-                this.patient = this.guide.patient;
-                Object.assign(this.patient, {patient_operator: this.guide.patient.operators[0].patient_operator});
+            if (this.guide.id) {
+                this.patient = {
+                    ...this.guide.patient,
+                    patient_operator: this.guide.patient.operators[0].patient_operator
+                };
                 this.rn = this.guide.rn;
             }
         },
         save(data) {
             if (data) {
-                this.patient = data;
+                this.patient = {
+                    ...data,
+                    patient_operator: data.operators[0].patient_operator
+                }
                 this.patients.push(this.patient);
             }
             this.dialog = false;

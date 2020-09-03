@@ -65,20 +65,20 @@
                     <thead>
                     <tr>
                         <th class="text-left">Operadora</th>
-                        <th class="text-left">Código na operadora</th>
+                        <th class="text-left">Cód. na operadora</th>
                         <th class="text-left">Editar</th>
                         <th class="text-left">Excluir</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in doctor_operators" :key="item.doctor_operator_number">
-                        <td>{{ item.operator }}</td>
-                        <td>{{ item.doctor_operator_number }}</td>
+                    <tr v-for="(item, idx) in doctor_operators" :key="idx">
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.doctor_operator.doctor_operator_number }}</td>
                         <td>
                             <v-icon @click="open(item)">mdi-pencil</v-icon>
                         </td>
                         <td>
-                            <v-icon @click="remove(item)">mdi-delete</v-icon>
+                            <v-icon @click="remove(idx)">mdi-delete</v-icon>
                         </td>
                     </tr>
                     </tbody>
@@ -114,7 +114,9 @@ export default {
     props: {
         doctor: {
             type: Object,
-            default: () => ({})
+            default: () => ({
+                operators: []
+            })
         },
         operators: {
             type: Array,
@@ -123,15 +125,14 @@ export default {
     },
     computed: {
         doctor_operators() {
-            return this.doctor.operators.map(doc_op => {
-                doc_op.doctor_operator.operator = doc_op.name;
-                return doc_op.doctor_operator;
-            })
+            return this.doctor.operators;
         }
     },
     data() {
         return {
             dialog: false,
+            action: 'store',
+            errors: [],
             ufs,
             cps,
             name: '',
@@ -140,8 +141,6 @@ export default {
             advice_number: '',
             cbo: '',
             doctor_operator: null,
-            action: 'store',
-            errors: []
         }
     },
     created() {
@@ -159,6 +158,7 @@ export default {
             }
         },
         salvar() {
+            this.toggleLoading();
             this.errors = [];
             if (this.action === 'store') {
                 this.request().post('/doctors/store', {
@@ -169,20 +169,13 @@ export default {
                     cbo: this.cbo,
                     operators: this.doctor_operators
                 }).then(response => {
-                    this.$emit('action', {
-                        id: response.data.data[0].id,
-                        name: response.data.data[0].name,
-                        cp: response.data.data[0].cp,
-                        uf: response.data.data[0].uf,
-                        advice_number: response.data.data[0].advice_number,
-                        cbo: response.data.data[0].cbo,
-                        operators: this.doctor_operators,
-                        doctor_operator: this.doctor_operators[0]
-                    })
+                    this.$emit('action', response.data.data);
                 }).catch(err => {
                     if (err.response.data.errors) {
                         this.errors = err.response.data.errors;
                     }
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             } else {
                 this.request().put(`/doctors/${this.doctor.id}/update`, {
@@ -193,11 +186,13 @@ export default {
                     cbo: this.cbo,
                     operators: this.doctor_operators
                 }).then(response => {
-                    this.$emit('action', 'save')
+                    this.$emit('action')
                 }).catch(err => {
                     if (err.response.data.errors) {
                         this.errors = err.response.data.errors;
                     }
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             }
         },
@@ -205,16 +200,16 @@ export default {
             if (data) {
                 if (data.action === 'store') {
                     this.doctor.operators.push({
-                        name: data.operator.text,
+                        ...data.operator,
                         doctor_operator: {
-                            operator_id: data.operator.value,
+                            operator_id: data.operator.id,
+                            doctor_id: this.doctor.id,
                             doctor_operator_number: data.doctor_operator_number,
-                            doctor_id: this.doctor.id
                         }
                     })
                 } else {
                     this.doctor.operators.map(op => {
-                        if (op.doctor_operator.operator_id === data.operator.value) {
+                        if (op.doctor_operator.operator_id === data.operator.id) {
                             op.doctor_operator.doctor_operator_number = data.doctor_operator_number;
                         }
                         return op;
@@ -228,8 +223,8 @@ export default {
             this.doctor_operator = data;
             this.dialog = true;
         },
-        remove(data) {
-            this.doctor.operators.splice(this.doctor.operators.findIndex(doc_op => doc_op.doctor_operator.doctor_operator_number === data.doctor_operator_number), 1);
+        remove(index) {
+            this.doctor.operators.splice(index, 1);
         }
     }
 }

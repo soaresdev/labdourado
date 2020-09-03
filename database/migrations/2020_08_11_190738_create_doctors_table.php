@@ -15,7 +15,7 @@ class CreateDoctorsTable extends Migration
     {
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name', 70);
             $table->enum('cp', [
                 '01',
                 '02',
@@ -28,7 +28,7 @@ class CreateDoctorsTable extends Migration
                 '09',
                 '10',
             ])->default('06');
-            $table->string('advice_number');
+            $table->string('advice_number', 15);
             $table->enum('uf', [
                 '11',
                 '12',
@@ -59,7 +59,7 @@ class CreateDoctorsTable extends Migration
                 '53',
                 '98',
             ])->default('31');
-            $table->string('cbo');
+            $table->string('cbo', 6);
             $table->timestamps();
             $table->softDeletes();
         });

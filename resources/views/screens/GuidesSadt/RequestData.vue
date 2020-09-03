@@ -6,7 +6,7 @@
                     v-model="character_treatment"
                     :items="cas"
                     filled
-                    label="21 - Caráter do Atendimento"
+                    label="21 - Caráter do Atendimento *"
                     :item-text="cas.text"
                     :item-value="cas.value"
                     required
@@ -46,7 +46,7 @@ export default {
     },
     methods: {
         verify() {
-            if (this.guide) {
+            if (this.guide.id) {
                 this.character_treatment = this.guide.character_treatment;
                 this.request_date = this.guide.request_date;
                 this.clinical_indication = this.guide.clinical_indication;

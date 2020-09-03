@@ -2,13 +2,13 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -16,7 +16,9 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'username', 'password',
+        'name',
+        'username',
+        'password',
     ];
 
     /**
@@ -44,7 +46,6 @@ class User extends Authenticatable
             unset($this->attributes['password']);
             return;
         }
-
         $this->attributes['password'] = Hash::make($value);
     }
 }

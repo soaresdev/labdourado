@@ -22,18 +22,19 @@
                     </v-row>
                     <v-row>
                         <v-col class="d-flex" cols="12" md="6">
-                            <v-select
+                            <v-autocomplete
                                 v-model="operator"
                                 :items="operators_select"
+                                dense
                                 filled
                                 label="Operadora *"
-                                :item-text="operators.text"
-                                :item-value="operators.value"
+                                :item-text="operators => `${operators.name} - ${operators.ans}`"
+                                :item-value="operators => operators"
                                 :readonly="!!provider_operator"
-                            ></v-select>
+                            ></v-autocomplete>
                         </v-col>
                         <v-col cols="12" md="6">
-                            <v-text-field label="Código na operadora *" required
+                            <v-text-field label="Cód. na operadora *" required
                                           v-model="provider_operator_number"></v-text-field>
                         </v-col>
 
@@ -70,10 +71,10 @@ export default {
     },
     data() {
         return {
-            provider_operator_number: '',
-            operator: '',
             action: 'store',
-            errors: []
+            errors: [],
+            operator: '',
+            provider_operator_number: ''
         }
     },
     created() {
@@ -82,9 +83,9 @@ export default {
     computed: {
         operators_select() {
             if (this.provider_operator) {
-                return this.operators.filter(op => op.value === this.provider_operator.operator_id);
-            } else if (this.operators_provider.length > 0) {
-                return this.operators.filter(op => !this.operators_provider.find(op_pv => op.value === op_pv.operator_id));
+                return this.operators.filter(op => op.id === this.provider_operator.provider_operator.operator_id);
+            } else if (!!this.operators_provider) {
+                return this.operators.filter(op => !this.operators_provider.find(op_pv => op.id === op_pv.provider_operator.operator_id));
             } else {
                 return this.operators;
             }
@@ -94,8 +95,12 @@ export default {
         verify() {
             if (this.provider_operator) {
                 this.action = 'update';
-                this.operator = this.provider_operator.operator_id;
-                this.provider_operator_number = this.provider_operator.provider_operator_number;
+                this.operator = {
+                    id: this.provider_operator.id,
+                    name: this.provider_operator.name,
+                    ans: this.provider_operator.ans
+                };
+                this.provider_operator_number = this.provider_operator.provider_operator.provider_operator_number;
             }
         },
         salvar() {
@@ -105,10 +110,8 @@ export default {
             } else {
                 this.$emit('action', {
                     action: this.action,
-                    operator: {
-                        value: this.operator,
-                        text: this.operators.find(op => op.value === this.operator).text
-                    }, provider_operator_number: this.provider_operator_number
+                    operator: this.operator,
+                    provider_operator_number: this.provider_operator_number
                 });
             }
         },

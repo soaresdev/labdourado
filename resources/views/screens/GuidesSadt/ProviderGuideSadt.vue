@@ -51,9 +51,11 @@ export default {
     },
     methods: {
         verify() {
-            if (this.guide) {
-                this.provider = this.guide.provider;
-                Object.assign(this.provider, {provider_operator: this.guide.provider.operators[0].provider_operator});
+            if (this.guide.id) {
+                this.provider = {
+                    ...this.guide.provider,
+                    provider_operator: this.guide.provider.operators[0].provider_operator
+                };
             } else {
                 this.provider = this.providers[0];
             }

@@ -20,10 +20,10 @@ class CreateGuideProceduresTable extends Migration
             $table->foreign('procedure_id')->references('id')->on('procedures')->onUpdate('CASCADE')->onDelete('CASCADE');
             $table->date('execution_date')->nullable()->default(now()->format('Y-m-d'));
             $table->unsignedFloat('reduction_factor', 3, 2)->nullable()->default(1.00);
-            $table->unsignedInteger('request_amount')->nullable()->default(0);
-            $table->unsignedInteger('permission_amount')->nullable()->default(0);
-            $table->unsignedFloat('unity_price')->nullable()->default(0.00);
-            $table->unsignedFloat('total_price')->nullable()->default(0.00);
+            $table->smallInteger('request_amount');
+            $table->smallInteger('permission_amount');
+            $table->unsignedFloat('unity_price');
+            $table->timestamps();
         });
     }
 

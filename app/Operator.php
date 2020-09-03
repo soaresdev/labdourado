@@ -8,13 +8,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Operator extends Model
 {
     use SoftDeletes;
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'ans',
+        'name',
+        'ans',
     ];
 
     /**
@@ -34,21 +36,54 @@ class Operator extends Model
 
     public function doctors()
     {
-        return $this->belongsToMany(Doctor::class, 'doctor_operators')->as('doctor_operator')->withPivot('doctor_operator_number');
+        return $this->belongsToMany(Doctor::class, 'doctor_operators')
+            ->using(DoctorOperator::class)
+            ->as('doctor_operator')
+            ->withPivot([
+                'doctor_id',
+                'operator_id',
+                'doctor_operator_number'
+            ])
+            ->withTimestamps();
     }
 
     public function providers()
     {
-        return $this->belongsToMany(Provider::class, 'provider_operators')->as('provider_operator')->withPivot('provider_operator_number');
+        return $this->belongsToMany(Provider::class, 'provider_operators')
+            ->using(ProviderOperator::class)
+            ->as('provider_operator')
+            ->withPivot([
+                'provider_id',
+                'operator_id',
+                'provider_operator_number'
+            ])
+            ->withTimestamps();
     }
 
     public function patients()
     {
-        return $this->belongsToMany(Patient::class, 'patient_operators', 'operator_id', 'patient_id')->using(PatientOperator::class)
+        return $this->belongsToMany(Patient::class, 'patient_operators')
+            ->using(PatientOperator::class)
             ->as('patient_operator')
             ->withPivot([
+                'patient_id',
+                'operator_id',
                 'wallet_number',
                 'wallet_expiration'
-            ]);
+            ])
+            ->withTimestamps();
+    }
+
+    public function procedures()
+    {
+        return $this->belongsToMany(Procedure::class, 'procedure_operators')
+            ->using(ProcedureOperator::class)
+            ->as('procedure_operator')
+            ->withPivot([
+                'procedure_id',
+                'operator_id',
+                'price'
+            ])
+            ->withTimestamps();
     }
 }

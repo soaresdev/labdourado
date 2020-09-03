@@ -2,24 +2,21 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class GuideSadt extends Model
 {
     use SoftDeletes;
 
-    protected $with = ['lot', 'patient', 'doctor', 'provider', 'procedures'];
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        "lot_id",
-        "doctor_id",
-        "provider_id",
-        "patient_id",
         'provider_number',
         'main_number',
         'permission_date',
@@ -27,47 +24,85 @@ class GuideSadt extends Model
         'password_expiration',
         'guide_operator_number',
         'rn',
-        'type_requester',
         'character_treatment',
         'request_date',
         'clinical_indication',
         'type_treatment',
         'accident_indication',
         'total',
-        'observation'
+        'observation',
+        'lot_id',
+        'doctor_id',
+        'patient_id',
+        'provider_id',
     ];
 
     protected $appends = [
+        'permission_date_formatted',
+        'password_expiration_formatted',
         'rn_formatted',
         'character_treatment_formatted',
+        'request_date_formatted',
         'type_treatment_formatted',
         'accident_indication_formatted',
-        'total_formatted',
-        'total_guide'
+        'total_formatted'
     ];
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'created_at' => 'datetime:d/m/Y',
+        'updated_at' => 'datetime:d/m/Y',
+    ];
+
+    public function lot()
+    {
+        return $this->belongsTo(Lot::class);
+    }
+
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class);
+    }
+
+    public function doctor()
+    {
+        return $this->belongsTo(Doctor::class);
+    }
+
+    public function provider()
+    {
+        return $this->belongsTo(Provider::class);
+    }
+
+    public function procedures()
+    {
+        return $this->belongsToMany(Procedure::class, 'guide_procedures', 'guide_id', 'procedure_id')
+            ->using(GuideProcedure::class)
+            ->as('guide_procedure')
+            ->withPivot([
+                'guide_id',
+                'procedure_id',
+                'execution_date',
+                'reduction_factor',
+                'request_amount',
+                'permission_amount',
+                'unity_price'
+            ])
+            ->withTimestamps();
+    }
 
     public function getRnFormattedAttribute()
     {
-        switch ($this->attributes['rn']) {
-            case 'N':
-                return 'N - Não';
-                break;
-            case 'S':
-                return 'S - Sim';
-                break;
-        }
+        return Str::is('N', $this->attributes['rn']) ? 'N - Não' : 'S - Sim';
     }
 
     public function getCharacterTreatmentFormattedAttribute()
     {
-        switch ($this->attributes['character_treatment']) {
-            case '1':
-                return '1 - Eletiva';
-                break;
-            case '2':
-                return '2 - Urgência/Emergência';
-                break;
-        }
+        return Str::is('1', $this->attributes['character_treatment']) ? '1 - Efetiva' : '2 - Urgência/Emergência';
     }
 
     public function getTypeTreatmentFormattedAttribute()
@@ -133,9 +168,8 @@ class GuideSadt extends Model
             case '21':
                 return '21 - Assistência a demitidos';
                 break;
-            case '22':
+            default:
                 return '22 - Telessaude';
-                break;
         }
     }
 
@@ -151,73 +185,34 @@ class GuideSadt extends Model
             case '2':
                 return '2 - Outros acidentes';
                 break;
-            case '9':
+            default:
                 return '9 - Não acidentes';
-                break;
         }
     }
 
-    public function getTotalGuideAttribute()
+    public function getPermissionDateFormattedAttribute()
     {
-        if (!empty($this->attributes['total'])) {
-            return number_format($this->attributes['total'], 2, ',', '.');
-        }
-        return null;
+        return !empty($this->attributes['permission_date']) ?
+            Carbon::createFromFormat('Y-m-d', $this->attributes['permission_date'])->format('d/m/Y')
+            : null;
+    }
+
+    public function getPasswordExpirationFormattedAttribute()
+    {
+        return !empty($this->attributes['password_expiration']) ?
+            Carbon::createFromFormat('Y-m-d', $this->attributes['password_expiration'])->format('d/m/Y')
+            : null;
+    }
+
+    public function getRequestDateFormattedAttribute()
+    {
+        return !empty($this->attributes['request_date']) ?
+            Carbon::createFromFormat('Y-m-d', $this->attributes['request_date'])->format('d/m/Y')
+            : null;
     }
 
     public function getTotalFormattedAttribute()
     {
-        return 'R$ ' . number_format(empty($this->attributes['total']) ? 0 : $this->attributes['total'], 2, ',', '.');
-    }
-
-    public function setTotalAttribute($value)
-    {
-        if(!empty($value)){
-            $this->attributes['total'] = floatval(str_replace(',', '.', str_replace('.', '', $value)));
-        }
-    }
-
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'created_at' => 'datetime:d/m/Y',
-        'updated_at' => 'datetime:d/m/Y',
-    ];
-
-    public function lot()
-    {
-        return $this->belongsTo(Lot::class);
-    }
-
-    public function patient()
-    {
-        return $this->belongsTo(Patient::class);
-    }
-
-    public function doctor()
-    {
-        return $this->belongsTo(Doctor::class);
-    }
-
-    public function provider()
-    {
-        return $this->belongsTo(Provider::class);
-    }
-
-    public function procedures()
-    {
-        return $this->belongsToMany(Procedure::class, 'guide_procedures', 'guide_id', 'procedure_id')->using(GuideProcedure::class)
-            ->as('guide_procedure')
-            ->withPivot([
-                'request_amount',
-                'permission_amount',
-                'reduction_factor',
-                'execution_date',
-                'unity_price',
-                'total_price'
-            ]);
+        return 'R$ ' . number_format($this->attributes['total'], 2, ',', '.');
     }
 }

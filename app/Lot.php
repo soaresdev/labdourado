@@ -4,11 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+
 class Lot extends Model
 {
     use SoftDeletes;
 
-    protected $with = ['operator'];
     protected $withCount = ['guides'];
 
     /**
@@ -17,10 +18,12 @@ class Lot extends Model
      * @var array
      */
     protected $fillable = [
-        'number', 'closed_at'
+        'number',
+        'closed_at'
     ];
 
     protected $appends = [
+        'closed_at_formatted',
         'total',
         'total_formatted'
     ];
@@ -31,7 +34,6 @@ class Lot extends Model
      * @var array
      */
     protected $casts = [
-        'closed_at' => 'datetime:d/m/Y',
         'created_at' => 'datetime:d/m/Y',
         'updated_at' => 'datetime:d/m/Y',
     ];
@@ -44,6 +46,14 @@ class Lot extends Model
     public function guides()
     {
         return $this->hasMany(GuideSadt::class);
+    }
+
+    public function getClosedAtFormattedAttribute()
+    {
+        return !empty($this->attributes['closed_at'])
+            ? Carbon::createFromFormat('Y-m-d', $this->attributes['closed_at'])
+                ->format('d/m/Y')
+            : null;
     }
 
     public function getTotalAttribute()

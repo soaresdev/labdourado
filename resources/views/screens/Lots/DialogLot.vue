@@ -25,25 +25,26 @@
                             <v-text-field label="Número do lote *" required v-model="number"></v-text-field>
                         </v-col>
                         <v-col class="d-flex" cols="12" md="6">
-                            <v-select
+                            <v-autocomplete
                                 v-model="operator"
                                 :items="operators_select"
+                                dense
                                 filled
                                 label="Operadora *"
-                                :item-text="operators_select.text"
-                                :item-value="operators_select.value"
-                                :readonly="!!lot_selected"
-                            ></v-select>
+                                :item-text="operators => `${operators.name} - ${operators.ans}`"
+                                :item-value="operators => operators"
+                                :readonly="!!lot"
+                            ></v-autocomplete>
                         </v-col>
                     </v-row>
                     <v-row v-if="this.lot">
                         <v-col cols="12" md="6">
                             <v-btn color="success" @click="toggle">
-                                {{ lot_selected.closed_at ? 'Abrir faturamento' : 'Fechar faturamento' }}
+                                {{ !!lot_selected && lot_selected.closed_at ? 'Abrir faturamento' : 'Fechar faturamento' }}
                             </v-btn>
                         </v-col>
                         <v-col cols="12" md="6">
-                            <v-btn :disabled="!lot_selected.closed_at" color="primary darken-1" @click="xml">Exportar
+                            <v-btn :disabled="!!lot_selected && !lot_selected.closed_at" color="primary darken-1" @click="xml">Exportar
                                 XML
                             </v-btn>
                         </v-col>
@@ -88,8 +89,8 @@ export default {
     },
     computed: {
         operators_select() {
-            if (this.lot) {
-                return this.operators.filter(op => op.value === this.lot.operator.id);
+            if (!!this.lot) {
+                return this.operators.filter(op => op.id === this.lot.operator.id);
             } else {
                 return this.operators;
             }
@@ -103,24 +104,29 @@ export default {
             if (this.lot) {
                 this.lot_selected = this.lot;
                 this.number = this.lot.number;
-                this.operator = this.lot.operator.id;
+                this.operator = {
+                    id: this.lot.operator.id,
+                    name: this.lot.operator.name,
+                    ans: this.lot.operator.ans
+                };
                 this.action = 'update'
-            } else {
-                this.action = 'store'
             }
         },
         salvar() {
+            this.toggleLoading();
             this.errors = [];
             if (this.action === 'store') {
                 this.request().post('/lots/store', {
                     number: this.number,
-                    operator: this.operator
+                    operator: this.operator.id
                 }).then(response => {
                     this.$emit('action')
                 }).catch(err => {
                     if (err.response.data.errors) {
                         this.errors = err.response.data.errors;
                     }
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             } else {
                 this.request().put(`/lots/${this.lot.id}/update`, {
@@ -131,20 +137,26 @@ export default {
                     if (err.response.data.errors) {
                         this.errors = err.response.data.errors;
                     }
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             }
         },
         toggle() {
             let msg = this.lot_selected.closed_at ? window.confirm("Tem certeza que deseja reabrir o lote?") : window.confirm("Tem certeza que deseja fechar o lote?");
             if (msg) {
+                this.toggleLoading();
                 this.request().put(`/lots/${this.lot.id}/toggle`).then(response => {
-                    this.lot_selected = response.data.data[0];
+                    this.lot_selected = response.data.data;
                 }).catch(err => {
                     console.log(err);
-                })
+                }).finally(() => {
+                    this.toggleLoading();
+                });
             }
         },
         xml() {
+            this.toggleLoading();
             this.request().put(`/lots/${this.lot.id}/xml`).then(response => {
                 let element = document.createElement('a');
                 element.setAttribute('href', response.data.data.url);
@@ -159,7 +171,9 @@ export default {
                 this.$emit('action');
             }).catch(err => {
                 console.log(err);
-            })
+            }).finally(() => {
+                this.toggleLoading();
+            });
         }
     }
 }

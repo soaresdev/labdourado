@@ -2,7 +2,7 @@
     <div class="text-center">
         <v-card>
             <v-card-title class="headline grey lighten-2">
-                {{ action === 'store' ? 'Novo paciente' : 'Editar paciente' }}
+                {{ action === 'store' ? 'Novo procedimento' : 'Editar procedimento' }}
             </v-card-title>
 
             <v-card-text>
@@ -22,15 +22,14 @@
                     </v-row>
                     <v-row>
                         <v-col cols="12" md="6">
-                            <v-text-field label="Nome *" required v-model="name"></v-text-field>
+                            <v-text-field label="Cód. do Procedimento" required v-model="number"></v-text-field>
                         </v-col>
                         <v-col cols="12" md="6">
-                            <v-text-field label="Carteira nacional de saúde" v-model="cns"></v-text-field>
+                            <v-text-field label="Descrição *" required v-model="description"></v-text-field>
                         </v-col>
                     </v-row>
                 </v-container>
             </v-card-text>
-
             <v-divider></v-divider>
             <v-btn color="primary" @click="dialog = true">Vincular operadora</v-btn>
             <v-simple-table
@@ -41,17 +40,15 @@
                     <thead>
                     <tr>
                         <th class="text-left">Operadora</th>
-                        <th class="text-left">Nº Carteira</th>
-                        <th class="text-left">Validade</th>
+                        <th class="text-left">Preço (R$)</th>
                         <th class="text-left">Editar</th>
                         <th class="text-left">Excluir</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="(item, idx) in patient_operators" :key="idx">
+                    <tr v-for="(item, idx) in procedure_operators" :key="idx">
                         <td>{{ item.name }}</td>
-                        <td>{{ item.patient_operator.wallet_number }}</td>
-                        <td>{{ item.patient_operator.wallet_expiration ? format(item.patient_operator.wallet_expiration) : '-' }}</td>
+                        <td>{{ convertToString(item.procedure_operator.price) }}</td>
                         <td>
                             <v-icon @click="open(item)">mdi-pencil</v-icon>
                         </td>
@@ -66,9 +63,9 @@
                 v-model="dialog"
                 width="800"
             >
-                <dialog-patient-operator v-if="dialog" :operators="operators" :operators_patient="patient_operators"
-                                         :patient_operator="patient_operator"
-                                         @action="save"></dialog-patient-operator>
+                <dialog-procedure-operator v-if="dialog" :operators="operators" :operators_procedure="procedure_operators"
+                                         :procedure_operator="procedure_operator"
+                                         @action="save"></dialog-procedure-operator>
             </v-dialog>
             <v-divider></v-divider>
 
@@ -82,19 +79,16 @@
 </template>
 
 <script>
-import DialogPatientOperator from './DialogPatientOperator'
-
+import DialogProcedureOperator from './DialogProcedureOperator'
 export default {
-    name: 'dialog-patient',
+number: "dialog-procedure",
     components: {
-        DialogPatientOperator
+        DialogProcedureOperator
     },
     props: {
-        patient: {
+        procedure: {
             type: Object,
-            default: () => ({
-                operators: []
-            })
+            default: () => ({})
         },
         operators: {
             type: Array,
@@ -106,14 +100,15 @@ export default {
             dialog: false,
             action: 'store',
             errors: [],
-            name: '',
-            cns: '',
-            patient_operator: null
+            number: '',
+            description: '',
+            operator: '',
+            procedure_operator: null
         }
     },
     computed: {
-        patient_operators() {
-            return this.patient.operators;
+        procedure_operators() {
+            return this.procedure.operators;
         }
     },
     created() {
@@ -121,22 +116,22 @@ export default {
     },
     methods: {
         verifyAction() {
-            if (this.patient.id) {
-                this.name = this.patient.name;
-                this.cns = this.patient.cns;
-                this.action = 'update'
+            if (this.procedure.id) {
+                this.number = this.procedure.number;
+                this.description = this.procedure.description;
+                this.action = 'update';
             }
         },
         salvar() {
             this.toggleLoading();
             this.errors = [];
             if (this.action === 'store') {
-                this.request().post('/patients/store', {
-                    name: this.name,
-                    cns: this.cns,
-                    operators: this.patient_operators,
+                this.request().post('/procedures/store', {
+                    number: this.number,
+                    description: this.description,
+                    operators: this.procedure_operators,
                 }).then(response => {
-                    this.$emit('action', response.data.data)
+                    this.$emit('action')
                 }).catch(err => {
                     if (err.response.data.errors) {
                         this.errors = err.response.data.errors;
@@ -145,10 +140,10 @@ export default {
                     this.toggleLoading();
                 });
             } else {
-                this.request().put(`/patients/${this.patient.id}/update`, {
-                    name: this.name,
-                    cns: this.cns,
-                    operators: this.patient_operators,
+                this.request().put(`/procedures/${this.procedure.id}/update`, {
+                    number: this.number,
+                    description: this.description,
+                    operators: this.procedure_operators,
                 }).then(response => {
                     this.$emit('action')
                 }).catch(err => {
@@ -163,39 +158,37 @@ export default {
         save(data) {
             if (data) {
                 if (data.action === 'store') {
-                    this.patient.operators.push({
+                    this.procedure.operators.push({
                         ...data.operator,
-                        patient_operator: {
-                            patient_id: this.patient.id,
+                        procedure_operator: {
+                            procedure_id: this.procedure.id,
                             operator_id: data.operator.id,
-                            wallet_number: data.wallet_number,
-                            wallet_expiration: data.wallet_expiration
+                            price: data.price
                         }
                     });
                 } else {
-                    this.patient.operators.map(op => {
-                        if (op.patient_operator.operator_id === data.operator.id) {
-                            op.patient_operator.wallet_number = data.wallet_number;
-                            op.patient_operator.wallet_expiration = data.wallet_expiration;
+                    this.procedure.operators.map(op => {
+                        if (op.procedure_operator.operator_id === data.operator.id) {
+                            op.procedure_operator.price = data.price;
                         }
                         return op;
                     })
                 }
             }
-            this.patient_operator = null;
+            this.procedure_operator = null;
             this.dialog = false;
         },
         open(data) {
-            this.patient_operator = data;
+            this.procedure_operator = data;
             this.dialog = true;
         },
         remove(index) {
-            this.patient.operators.splice(index, 1);
+            this.procedure.operators.splice(index, 1);
         }
     }
 }
 </script>
 
-<style>
+<style scoped>
 
 </style>

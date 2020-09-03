@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateProviderOperatorsTable extends Migration
+class CreateProcedureOperatorsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class CreateProviderOperatorsTable extends Migration
      */
     public function up()
     {
-        Schema::create('provider_operators', function (Blueprint $table) {
-            $table->string('provider_operator_number', 14);
-            $table->unsignedBigInteger('provider_id');
-            $table->foreign('provider_id')->references('id')->on('providers')->onUpdate('CASCADE')->onDelete('CASCADE');
+        Schema::create('procedure_operators', function (Blueprint $table) {
+            $table->unsignedBigInteger('procedure_id');
+            $table->foreign('procedure_id')->references('id')->on('procedures')->onUpdate('CASCADE')->onDelete('CASCADE');
             $table->unsignedBigInteger('operator_id');
             $table->foreign('operator_id')->references('id')->on('operators')->onUpdate('CASCADE')->onDelete('CASCADE');
+            $table->unsignedFloat('price');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ class CreateProviderOperatorsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('provider_operators');
+        Schema::dropIfExists('procedure_operators');
     }
 }

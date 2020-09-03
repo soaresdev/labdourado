@@ -15,34 +15,22 @@ class CreateGuideSadtsTable extends Migration
     {
         Schema::create('guide_sadts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('lot_id')->nullable();
-            $table->foreign('lot_id')->references('id')->on('lots')->onUpdate('CASCADE')->onDelete('SET NULL');
-            $table->string('provider_number')->nullable();
-            $table->string('main_number')->nullable();
-            $table->date('permission_date')->nullable();
-            $table->string('password')->nullable();
+            $table->string('provider_number', 20)->nullable();
+            $table->string('main_number', 20)->nullable();
+            $table->date('permission_date')->nullable()->default(now()->format('Y-m-d'));
+            $table->string('password', 20)->nullable();
             $table->date('password_expiration')->nullable();
-            $table->string('guide_operator_number')->nullable();
-            $table->unsignedBigInteger('patient_id')->nullable();
-            $table->foreign('patient_id')->references('id')->on('patients')->onUpdate('CASCADE')->onDelete('SET NULL');
+            $table->string('guide_operator_number', 20)->nullable();
             $table->enum('rn', [
                 'N',
                 'S'
             ])->nullable()->default('N');
-            $table->enum('type_requester', [
-                'provider',
-                'doctor'
-            ])->nullable()->default('doctor');
-            $table->unsignedBigInteger('doctor_id')->nullable();
-            $table->foreign('doctor_id')->references('id')->on('doctors')->onUpdate('CASCADE')->onDelete('SET NULL');
-            $table->unsignedBigInteger('provider_id')->nullable();
-            $table->foreign('provider_id')->references('id')->on('providers')->onUpdate('CASCADE')->onDelete('SET NULL');
             $table->enum('character_treatment', [
                 '1',
                 '2'
             ])->nullable()->default('1');
             $table->date('request_date')->nullable();
-            $table->text('clinical_indication')->nullable();
+            $table->string('clinical_indication', 150)->nullable();
             $table->enum('type_treatment', [
                 '01',
                 '02',
@@ -72,8 +60,16 @@ class CreateGuideSadtsTable extends Migration
                 '2',
                 '9'
             ])->nullable()->default('9');
-            $table->unsignedFloat('total', 10, 2)->nullable();
-            $table->text('observation')->nullable();
+            $table->unsignedFloat('total', 10, 2);
+            $table->string('observation', 150)->nullable(); //Max: 150
+            $table->unsignedBigInteger('lot_id')->nullable();
+            $table->foreign('lot_id')->references('id')->on('lots')->onUpdate('CASCADE')->onDelete('SET NULL');
+            $table->unsignedBigInteger('patient_id')->nullable();
+            $table->foreign('patient_id')->references('id')->on('patients')->onUpdate('CASCADE')->onDelete('SET NULL');
+            $table->unsignedBigInteger('doctor_id')->nullable();
+            $table->foreign('doctor_id')->references('id')->on('doctors')->onUpdate('CASCADE')->onDelete('SET NULL');
+            $table->unsignedBigInteger('provider_id')->nullable();
+            $table->foreign('provider_id')->references('id')->on('providers')->onUpdate('CASCADE')->onDelete('SET NULL');
             $table->timestamps();
             $table->softDeletes();
         });

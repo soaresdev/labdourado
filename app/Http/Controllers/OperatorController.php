@@ -3,12 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Operator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use JamesDordoy\LaravelVueDatatable\Http\Resources\DataTableCollectionResource;
 
 class OperatorController extends Controller
 {
+    protected $fillable = [
+        'name',
+        'ans'
+    ];
+
+    protected $rulesCreate = [
+        'name' => 'required|max:70',
+        'ans' => 'required|max:6'
+    ];
+
+    protected $rulesUpdate = [
+        'name' => 'required|max:70',
+        'ans' => 'required|max:6'
+    ];
+
     public function index(Request $request)
     {
         $length = $request->input('length');
@@ -17,11 +33,9 @@ class OperatorController extends Controller
         $searchValue = $request->input('search');
         $query = Operator::where("operators.id", "LIKE", "%$searchValue%")
             ->orWhere("operators.name", "LIKE", "%$searchValue%")
-            ->orWhere("operators.ans", "LIKE", "%$searchValue%");
-        $query->orderBy($sortBy, $orderBy);
-
+            ->orWhere("operators.ans", "LIKE", "%$searchValue%")
+            ->orderBy($sortBy, $orderBy);
         $data = $query->paginate($length);
-
         return new DataTableCollectionResource($data);
     }
 
@@ -32,23 +46,18 @@ class OperatorController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->only([
-            'name',
-            'ans'
-        ]), [
-            'name' => 'required',
-            'ans' => 'required',
-        ]);
+        $data = $request->only($this->fillable);
+        $validator = Validator::make($data, $this->rulesCreate);
         if ($validator->fails()) {
             return $this->message->error(config('constants.messages.error.validation'))
-                ->setStatus(422)
-                ->setErrors($validator->errors()->all())
+                ->setStatus(422)->setErrors($validator->errors()->all())
                 ->getResponse();
         }
         try {
-            Operator::create($validator->validated());
+            $operator = Operator::create($data);
             return $this->message->success('Operadora' . config('constants.messages.success.created'))
                 ->setStatus(201)
+                ->setData($operator->toArray())
                 ->getResponse();
         } catch (\Exception $e) {
             return $this->message->error()
@@ -58,13 +67,8 @@ class OperatorController extends Controller
 
     public function update(Request $request, int $id)
     {
-        $validator = Validator::make($request->only([
-            'name',
-            'ans'
-        ]), [
-            'name' => 'required',
-            'ans' => 'required',
-        ]);
+        $data = $request->only($this->fillable);
+        $validator = Validator::make($data, $this->rulesUpdate);
         if ($validator->fails()) {
             return $this->message->error(config('constants.messages.error.validation'))
                 ->setStatus(422)
@@ -72,14 +76,19 @@ class OperatorController extends Controller
                 ->getResponse();
         }
         try {
-            $provider = Operator::findOrFail($id);
-            $provider->update($validator->validated());
+            $operator = Operator::findOrFail($id);
+            $operator->update($data);
             return $this->message->success('Operadora' . config('constants.messages.success.updated'))
                 ->setStatus(200)
                 ->getResponse();
         } catch (\Exception $e) {
-            return $this->message->error()
-                ->getResponse();
+            if ($e instanceof ModelNotFoundException) {
+                return $this->message->error('Operadora não encontrada')->getResponse();
+            } else {
+                return $this->message->error()->setErrors([
+                    $e->getMessage()
+                ])->getResponse();
+            }
         }
     }
 
@@ -92,8 +101,13 @@ class OperatorController extends Controller
                 ->setStatus(200)
                 ->getResponse();
         } catch (\Exception $e) {
-            return $this->message->error()
-                ->getResponse();
+            if ($e instanceof ModelNotFoundException) {
+                return $this->message->error('Operadora não encontrada')->getResponse();
+            } else {
+                return $this->message->error()->setErrors([
+                    $e->getMessage()
+                ])->getResponse();
+            }
         }
     }
 }

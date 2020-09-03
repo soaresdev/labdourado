@@ -88,6 +88,7 @@ export default {
                 {title: 'Pacientes', icon: 'mdi-account-group', name: 'patients.index'},
                 {title: 'Médicos', icon: 'mdi-doctor', name: 'doctors.index'},
                 {title: 'Operadoras', icon: 'mdi-domain', name: 'operators.index'},
+                {title: 'Procedimentos', icon: 'mdi-bottle-tonic-plus', name: 'procedures.index'},
                 {title: 'Lotes', icon: 'mdi-paperclip', name: 'lots.index'},
                 {title: 'Guias SP/SADT', icon: 'mdi-clipboard', name: 'guides-sadt.index'},
             ],

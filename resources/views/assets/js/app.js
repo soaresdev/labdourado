@@ -8,7 +8,11 @@ import routes from './routes'
 import App from '../../screens/App'
 import RequestMixin from './mixins/RequestMixin'
 import HelperMixin from './mixins/HelperMixin'
-import store from './store';
+import store from './store'
+import VCurrencyField from 'v-currency-field'
+import {VueMaskDirective} from 'v-mask'
+import Loading from 'vue-loading-overlay'
+import 'vue-loading-overlay/dist/vue-loading.css'
 
 window._ = require('lodash');
 
@@ -30,9 +34,21 @@ moment.tz.setDefault('America/Sao_Paulo')
 
 Vue.use(VueRouter)
 Vue.use(DataTable)
+Vue.use(VCurrencyField, {
+    locale: 'pt-BR',
+    decimalLength: 2,
+    autoDecimalMode: true,
+    min: null,
+    max: null,
+    valueAsInteger: false,
+    allowNegative: false
+})
+Vue.use(Loading)
 
-Vue.mixin(RequestMixin)
+Vue.directive('mask', VueMaskDirective)
+
 Vue.mixin(HelperMixin)
+Vue.mixin(RequestMixin)
 
 const router = new VueRouter({
     mode: 'history',

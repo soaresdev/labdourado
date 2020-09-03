@@ -14,11 +14,12 @@ class CreateDoctorOperatorsTable extends Migration
     public function up()
     {
         Schema::create('doctor_operators', function (Blueprint $table) {
-            $table->string('doctor_operator_number');
+            $table->string('doctor_operator_number', 14);
             $table->unsignedBigInteger('doctor_id');
             $table->foreign('doctor_id')->references('id')->on('doctors')->onUpdate('CASCADE')->onDelete('CASCADE');
             $table->unsignedBigInteger('operator_id');
             $table->foreign('operator_id')->references('id')->on('operators')->onUpdate('CASCADE')->onDelete('CASCADE');
+            $table->timestamps();
         });
     }
 

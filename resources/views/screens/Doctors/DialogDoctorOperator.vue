@@ -22,20 +22,21 @@
                     </v-row>
                     <v-row>
                         <v-col class="d-flex" cols="12" md="6">
-                            <v-select
+                            <v-autocomplete
                                 v-model="operator"
                                 :items="operators_select"
+                                dense
                                 filled
                                 label="Operadora *"
-                                :item-text="operators.text"
-                                :item-value="operators.value"
-                            ></v-select>
+                                :item-text="operators => `${operators.name} - ${operators.ans}`"
+                                :item-value="operators => operators"
+                                :readonly="!!doctor_operator"
+                            ></v-autocomplete>
                         </v-col>
                         <v-col cols="12" md="6">
                             <v-text-field label="Código na operadora *" required
                                           v-model="doctor_operator_number"></v-text-field>
                         </v-col>
-
                     </v-row>
                 </v-container>
             </v-card-text>
@@ -69,10 +70,10 @@ export default {
     },
     data() {
         return {
-            doctor_operator_number: '',
-            operator: '',
             action: 'store',
-            errors: []
+            errors: [],
+            operator: '',
+            doctor_operator_number: ''
         }
     },
     created() {
@@ -81,9 +82,9 @@ export default {
     computed: {
         operators_select() {
             if (this.doctor_operator) {
-                return this.operators.filter(op => op.value === this.doctor_operator.operator_id)
-            } else if (this.operators_doctor.length > 0) {
-                return this.operators.filter(op => !this.operators_doctor.find(op_doc => op.value === op_doc.operator_id));
+                return this.operators.filter(op => op.id === this.doctor_operator.doctor_operator.operator_id)
+            } else if (!!this.operators_doctor) {
+                return this.operators.filter(op => !this.operators_doctor.find(op_doc => op.id === op_doc.doctor_operator.operator_id));
             } else {
                 return this.operators;
             }
@@ -93,10 +94,12 @@ export default {
         verify() {
             if (this.doctor_operator) {
                 this.action = 'update';
-                this.operator = this.doctor_operator.operator_id;
-                this.doctor_operator_number = this.doctor_operator.doctor_operator_number;
-            } else {
-                this.action = 'store';
+                this.operator = {
+                    id: this.doctor_operator.id,
+                    name: this.doctor_operator.name,
+                    ans: this.doctor_operator.ans
+                };
+                this.doctor_operator_number = this.doctor_operator.doctor_operator.doctor_operator_number;
             }
         },
         salvar() {
@@ -106,10 +109,8 @@ export default {
             } else {
                 this.$emit('action', {
                     action: this.action,
-                    operator: {
-                        value: this.operator,
-                        text: this.operators.find(op => op.value === this.operator).text
-                    }, doctor_operator_number: this.doctor_operator_number
+                    operator: this.operator,
+                    doctor_operator_number: this.doctor_operator_number
                 });
             }
         },

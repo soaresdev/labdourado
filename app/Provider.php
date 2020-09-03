@@ -4,10 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Provider extends Model
 {
     use SoftDeletes;
-    protected $with = ['operators'];
     /**
      * The attributes that are mass assignable.
      *
@@ -15,7 +15,8 @@ class Provider extends Model
      */
 
     protected $fillable = [
-        'name', 'cnes',
+        'name',
+        'cnes',
     ];
 
     /**
@@ -30,6 +31,14 @@ class Provider extends Model
 
     public function operators()
     {
-        return $this->belongsToMany(Operator::class, 'provider_operators')->as('provider_operator')->withPivot('provider_operator_number');
+        return $this->belongsToMany(Operator::class, 'provider_operators')
+            ->using(ProviderOperator::class)
+            ->as('provider_operator')
+            ->withPivot([
+                'provider_id',
+                'operator_id',
+                'provider_operator_number'
+            ])
+            ->withTimestamps();
     }
 }

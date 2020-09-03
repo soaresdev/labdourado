@@ -31,6 +31,7 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
         });
         Route::prefix('/providers')->group(function () {
             Route::get('/', 'ProviderController@index')->name('providers.index');
+            Route::get('/{id}', 'ProviderController@show')->name('providers.show');
             Route::get('/select', 'ProviderController@indexData')->name('providers.indexData');
             Route::middleware('db.transaction')->group(function () {
                 Route::post('/store', 'ProviderController@store')->name('providers.store');
@@ -40,6 +41,7 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
         });
         Route::prefix('/patients')->group(function () {
             Route::get('/', 'PatientController@index')->name('patients.index');
+            Route::get('/{id}', 'PatientController@show')->name('patients.show');
             Route::middleware('db.transaction')->group(function () {
                 Route::post('/store', 'PatientController@store')->name('patients.store');
                 Route::put('/{id}/update', 'PatientController@update')->name('patients.update');
@@ -48,6 +50,7 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
         });
         Route::prefix('/doctors')->group(function () {
             Route::get('/', 'DoctorController@index')->name('doctors.index');
+            Route::get('/{id}', 'DoctorController@show')->name('doctors.show');
             Route::middleware('db.transaction')->group(function () {
                 Route::post('/store', 'DoctorController@store')->name('doctors.store');
                 Route::put('/{id}/update', 'DoctorController@update')->name('doctors.update');
@@ -74,6 +77,15 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
                 Route::delete('/{id}/delete', 'LotController@delete')->name('lots.delete');
             });
         });
+        Route::prefix('/procedures')->group(function () {
+            Route::get('/', 'ProcedureController@index')->name('procedures.index');
+            Route::get('/{id}', 'ProcedureController@show')->name('procedures.show');
+            Route::middleware('db.transaction')->group(function () {
+                Route::post('/store', 'ProcedureController@store')->name('procedures.store');
+                Route::put('/{id}/update', 'ProcedureController@update')->name('procedures.update');
+                Route::delete('/{id}/delete', 'ProcedureController@delete')->name('procedures.delete');
+            });
+        });
         Route::prefix('/guides-sadt')->group(function () {
             Route::get('/', 'GuideSadtController@index')->name('guidesSadt.index');
             Route::get('/{id}', 'GuideSadtController@show')->name('guidesSadt.show');
@@ -82,9 +94,6 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
                 Route::put('/{id}/update', 'GuideSadtController@update')->name('guidesSadt.update');
                 Route::delete('/{id}/delete', 'GuideSadtController@delete')->name('guidesSadt.delete');
             });
-        });
-        Route::prefix('/procedures')->group(function () {
-            Route::get('/', 'ProcedureController@indexData')->name('procedures.indexData');
         });
         Route::get('/resume', 'HomeController@getResume')->name('resume');
     });

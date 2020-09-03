@@ -31,6 +31,11 @@ export default [
         component: require('../../screens/Operators/IndexOperator').default,
     },
     {
+        path: '/procedures',
+        name: 'procedures.index',
+        component: require('../../screens/Procedures/IndexProcedure').default,
+    },
+    {
         path: '/lots',
         name: 'lots.index',
         component: require('../../screens/Lots/IndexLot').default,

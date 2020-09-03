@@ -14,6 +14,6 @@ class ProcedureSeeder extends Seeder
      */
     public function run()
     {
-        Excel::import(new ProceduresImport, storage_path('procedures.xlsx'));
+        Excel::import(new ProceduresImport, storage_path('procedures-agros.xlsx'));
     }
 }

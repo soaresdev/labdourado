@@ -1,8 +1,11 @@
 <template>
     <data-table
+        v-if="!!filters.operator"
         :columns="columns"
         :url="url"
         :filters="filters"
+        @loading="toggleLoading"
+        @finished-loading="toggleLoading"
         order-dir="desc"
         ref="table">
         <div slot="filters" slot-scope="{ tableData, perPage }">
@@ -17,14 +20,14 @@
                         name="name"
                         class="form-control"
                         v-model="tableData.search"
-                        placeholder="Pesquisar">
+                        placeholder="Pesquisar pelos campos da tabela">
                 </div>
                 <div class="col-md-4">
                     <select
                         v-model="tableData.filters.operator"
                         class="form-control">
-                        <option v-for="operator in operators" :key="operator.value" :value="operator.value">
-                            {{ operator.text }}
+                        <option v-for="operator in operators" :key="operator.id" :value="operator.id">
+                            {{ operator.name }} - {{ operator.ans }}
                         </option>
                     </select>
                 </div>
@@ -48,6 +51,9 @@ export default {
         return {
             url: "/dashboard/api/guides-sadt",
             operators: [],
+            filters: {
+                operator: ''
+            },
             columns: [
                 {
                     label: 'ID',
@@ -59,31 +65,25 @@ export default {
                     label: 'Nº do Lote',
                     name: 'lot.number',
                     columnName: 'lots.number',
-                    orderable: false,
+                    orderable: false
                 },
                 {
                     label: 'Nº Guia no Prestador',
                     name: 'provider_number',
                     columnName: 'guide_sadts.provider_number',
-                    orderable: false,
-                },
-                {
-                    label: 'Nº Guia na Operadora',
-                    name: 'guide_operator_number',
-                    columnName: 'guide_sadts.guide_operator_number',
-                    orderable: false,
+                    orderable: false
                 },
                 {
                     label: 'Senha',
                     name: 'password',
                     columnName: 'guide_sadts.password',
-                    orderable: false,
+                    orderable: false
                 },
                 {
                     label: 'Total',
                     name: 'total_formatted',
                     columnName: 'guide_sadts.total',
-                    orderable: false,
+                    orderable: true
                 },
                 {
                     label: '',
@@ -92,11 +92,11 @@ export default {
                         color: 'primary',
                         icon: 'mdi-pencil'
                     },
-                    width: 10,
+                    width: 5,
                     orderable: false,
                     event: "click",
                     handler: this.redirect,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
                 {
                     label: '',
@@ -105,16 +105,13 @@ export default {
                         color: 'error',
                         icon: 'mdi-delete'
                     },
-                    width: 10,
+                    width: 5,
                     orderable: false,
                     event: "click",
                     handler: this.delete,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
-            ],
-            filters: {
-                operator: ''
-            },
+            ]
         }
     },
     created() {
@@ -123,16 +120,12 @@ export default {
     methods: {
         getOperators() {
             this.request().get('/operators/select').then(response => {
-                this.operators = response.data.data.map(op => {
-                    return {
-                        value: op.id,
-                        text: op.name
-                    };
-                });
-                this.$refs.table.filters.operator = this.operators[0].value;
+                this.operators = response.data.data;
+                if (!!this.operators)
+                    this.filters.operator = this.operators[0].id;
             }).catch(err => {
                 this.operators = [];
-            })
+            });
         },
         redirect(data) {
             if (data) {
@@ -146,8 +139,11 @@ export default {
         },
         delete(data) {
             if (window.confirm("Tem certeza que deseja excluir a guia?\n")) {
+                this.toggleLoading();
                 this.request().delete(`/guides-sadt/${data.id}/delete`).then(response => {
                     this.$refs.table.getData();
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             }
         }

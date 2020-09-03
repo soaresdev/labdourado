@@ -42,7 +42,8 @@
                 <provider-guide-sadt :guide="guide" :providers="lot.operator.providers"
                                      ref="provider"></provider-guide-sadt>
                 <treatment-data :guide="guide" ref="treatment"></treatment-data>
-                <procedures-guide-sadt :guide="guide" ref="procedures_selected"></procedures-guide-sadt>
+                <procedures-guide-sadt :guide="guide" :procedures="lot.operator.procedures"
+                                       ref="procedures_selected"></procedures-guide-sadt>
             </v-row>
             <v-row v-if="lots.length > 0 && lot">
                 <v-col cols="12" class="text-center">
@@ -95,7 +96,9 @@ export default {
             lots: [],
             operator: null,
             lot: null,
-            guide: null,
+            guide: {
+                procedures: []
+            },
             errors: []
         }
     },
@@ -111,19 +114,25 @@ export default {
             }
         },
         getGuide() {
+            this.toggleLoading();
             this.request().get(`/guides-sadt/${this.$route.params.id}`).then(response => {
-                this.guide = response.data.data[0];
+                this.guide = response.data.data;
                 this.operators = [this.guide.lot.operator];
                 this.operator = this.guide.lot.operator;
                 this.getLots();
             }).catch(err => {
-                this.guide = null;
+                console.log(err);
+                this.guide = {
+                    procedures: []
+                };
                 this.operators = [];
                 this.operator = null;
-                console.log(err);
-            })
+            }).finally(() => {
+                this.toggleLoading();
+            });
         },
         getOperators() {
+            this.toggleLoading();
             this.request().get('/operators/select').then(response => {
                 this.operators = response.data.data;
                 if (this.operators.length > 0) {
@@ -134,13 +143,16 @@ export default {
                 console.log(err);
                 this.operator = null;
                 this.operators = [];
-            })
+            }).finally(() => {
+                this.toggleLoading();
+            });
         },
         getLots() {
+            this.toggleLoading();
             return this.request().get(`/lots/select/${this.operator.id}`).then(response => {
-                this.lots = this.guide ? response.data.data.filter(lt => lt.id === this.guide.lot.id) : response.data.data;
+                this.lots = this.guide.id ? response.data.data.filter(lt => lt.id === this.guide.lot.id) : response.data.data;
                 if (this.lots.length > 0) {
-                    if (this.guide) {
+                    if (this.guide.id) {
                         this.lot = this.lots.find(lt => lt.id === this.guide.lot.id);
                     } else {
                         this.lot = this.lots[this.lots.length - 1];
@@ -150,83 +162,75 @@ export default {
                 console.log(err);
                 this.lots = [];
                 this.lot = null;
-            });
+            }).finally(() => {
+                this.toggleLoading();
+            })
         },
         save() {
             this.errors = [];
-            let header = {
-                provider_number: this.$refs.header.provider_number,
-                main_number: this.$refs.header.main_number,
-                permission_date: this.$refs.header.permission_date,
-                password: this.$refs.header.password,
-                password_expiration: this.$refs.header.password_expiration,
-                guide_operator_number: this.$refs.header.guide_operator_number
+            const header = {
+                provider_number: this.$refs.header.$data.provider_number,
+                main_number: this.$refs.header.$data.main_number,
+                permission_date: this.$refs.header.$data.permission_date,
+                password: this.$refs.header.$data.password,
+                password_expiration: this.$refs.header.$data.password_expiration,
+                guide_operator_number: this.$refs.header.$data.guide_operator_number
             };
-            let patient = {
-                patient_id: this.$refs.patient.patient ? this.$refs.patient.patient.id : null,
-                rn: this.$refs.patient.rn
+            const patient = {
+                patient_id: this.$refs.patient.$data.patient ? this.$refs.patient.$data.patient.id : null,
+                rn: this.$refs.patient.$data.rn
             };
-            if (!patient.patient_id) {
-                this.errors.push('Selecione um paciente!');
-            }
-            let doctor = {
-                doctor_id: this.$refs.doctor.doctor ? this.$refs.doctor.doctor.id : null
+            const doctor = {
+                doctor_id: this.$refs.doctor.$data.doctor ? this.$refs.doctor.$data.doctor.id : null
             };
-            if (!doctor.doctor_id) {
-                this.errors.push('Selecione um médico!');
-            }
-            let reqdata = {
-                character_treatment: this.$refs.reqdata.character_treatment,
-                request_date: this.$refs.reqdata.request_date,
-                clinical_indication: this.$refs.reqdata.clinical_indication
+            const reqdata = {
+                character_treatment: this.$refs.reqdata.$data.character_treatment,
+                request_date: this.$refs.reqdata.$data.request_date,
+                clinical_indication: this.$refs.reqdata.$data.clinical_indication
             };
-            let treatment = {
-                type_treatment: this.$refs.treatment.type_treatment,
-                accident_indication: this.$refs.treatment.accident_indication,
-                total: this.$refs.treatment.total,
-                observation: this.$refs.treatment.observation
-            }
-            let provider = {
-                provider_id: this.$refs.provider.provider ? this.$refs.provider.provider.id : null
-            }
-            if (!provider.provider_id) {
-                this.errors.push('Selecione um prestador');
-            }
-            let procedures = {
-                guide_procedures: this.$refs.procedures_selected.guide_procedures
-            }
-            if (patient.patient_id && doctor.doctor_id && provider.provider_id) {
-                if (!this.guide) {
-                    this.request().post('guides-sadt/store', {
-                        lot_id: this.lot.id,
-                        ...header,
-                        ...patient,
-                        ...doctor,
-                        ...reqdata,
-                        ...treatment,
-                        ...provider,
-                        ...procedures
-                    }).then(response => {
-                        this.$router.go();
-                    }).catch(err => {
-                        console.log(err);
-                    });
-                } else {
-                    this.request().put(`guides-sadt/${this.guide.id}/update`, {
-                        lot_id: this.lot.id,
-                        ...header,
-                        ...patient,
-                        ...doctor,
-                        ...reqdata,
-                        ...treatment,
-                        ...provider,
-                        ...procedures
-                    }).then(response => {
-                        this.$router.push({name: 'guides-sadt.index'})
-                    }).catch(err => {
-                        console.log(err);
-                    });
-                }
+            const provider = {
+                provider_id: this.$refs.provider.$data.provider ? this.$refs.provider.$data.provider.id : null
+            };
+            const treatment = {
+                type_treatment: this.$refs.treatment.$data.type_treatment,
+                accident_indication: this.$refs.treatment.$data.accident_indication,
+                total: this.$refs.treatment.$data.total,
+                observation: this.$refs.treatment.$data.observation
+            };
+            const data = {
+                lot_id: this.lot.id,
+                ...header,
+                ...patient,
+                ...doctor,
+                ...reqdata,
+                ...provider,
+                ...treatment,
+                procedures: this.guide.procedures
+            };
+            if (!this.guide.id) {
+                this.toggleLoading();
+                this.request().post('guides-sadt/store', data).then(response => {
+                    this.$router.go();
+                }).catch(err => {
+                    console.log(err);
+                    if (err.response.data.errors) {
+                        this.errors = err.response.data.errors;
+                    }
+                }).finally(() => {
+                    this.toggleLoading();
+                });
+            } else {
+                this.toggleLoading();
+                this.request().put(`guides-sadt/${this.guide.id}/update`, data).then(response => {
+                    this.$router.push({name: 'guides-sadt.index'})
+                }).catch(err => {
+                    console.log(err);
+                    if (err.response.data.errors) {
+                        this.errors = err.response.data.errors;
+                    }
+                }).finally(() => {
+                    this.toggleLoading();
+                });
             }
         }
     }

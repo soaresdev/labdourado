@@ -15,10 +15,11 @@ class CreateProceduresTable extends Migration
     {
         Schema::create('procedures', function (Blueprint $table) {
             $table->id();
-            $table->string('table')->nullable()->default('22');
-            $table->string('number');
-            $table->text('description');
+            $table->string('table', 5)->nullable()->default('22');
+            $table->string('number', 10);
+            $table->string('description', 150);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

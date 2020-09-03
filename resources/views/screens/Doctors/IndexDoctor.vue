@@ -7,9 +7,12 @@
             <dialog-doctor v-if="dialog" :operators="operators" :doctor="doctor" @action="close"></dialog-doctor>
         </v-dialog>
         <data-table
+            v-if="!!filters.operator"
             :columns="columns"
             :url="url"
             :filters="filters"
+            @loading="toggleLoading"
+            @finished-loading="toggleLoading"
             order-dir="desc"
             ref="table">
             <div slot="filters" slot-scope="{ tableData, perPage }">
@@ -24,14 +27,14 @@
                             name="name"
                             class="form-control"
                             v-model="tableData.search"
-                            placeholder="Pesquisar">
+                            placeholder="Pesquisar pelos campos da tabela">
                     </div>
                     <div class="col-md-4">
                         <select
                             v-model="tableData.filters.operator"
                             class="form-control">
-                            <option v-for="operator in operators" :key="operator.value" :value="operator.value">
-                                {{ operator.text }}
+                            <option v-for="operator in operators" :key="operator.id" :value="operator.id">
+                                {{ operator.name }} - {{ operator.ans }}
                             </option>
                         </select>
                     </div>
@@ -73,47 +76,46 @@ export default {
                     label: 'ID',
                     name: 'id',
                     columnName: 'doctors.id',
-                    orderable: true,
+                    orderable: true
                 },
                 {
                     label: 'Nome',
                     name: 'name',
                     columnName: 'doctors.name',
-                    orderable: true,
+                    orderable: true
                 },
                 {
                     label: 'Conselho',
                     name: 'cp_formatted',
                     columnName: 'cp',
-                    orderable: false,
-                    searchable: false
+                    orderable: false
                 },
                 {
                     label: 'Nº no Conselho',
                     name: 'advice_number',
                     columnName: 'doctors.advice_number',
-                    orderable: false,
+                    orderable: false
                 },
                 {
                     label: 'UF',
                     name: 'uf_formatted',
                     columnName: 'uf',
-                    orderable: false,
-                    searchable: false
+                    orderable: false
                 },
                 {
                     label: 'CBO',
                     name: 'cbo',
-                    orderable: false,
+                    orderable: false
                 },
                 {
                     label: 'Cód. na Operadora',
                     name: 'operators',
+                    columnName: 'doctor_operators.doctor_operator_number',
                     meta: {
                         column: 'doctor_operator_number'
                     },
                     component: IndexDoctorOperator,
-                    orderable: false,
+                    orderable: false
                 },
                 {
                     label: '',
@@ -126,7 +128,7 @@ export default {
                     orderable: false,
                     event: "click",
                     handler: this.open,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
                 {
                     label: '',
@@ -139,7 +141,7 @@ export default {
                     orderable: false,
                     event: "click",
                     handler: this.delete,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
             ]
         }
@@ -150,22 +152,31 @@ export default {
     methods: {
         getOperators() {
             this.request().get('/operators/select').then(response => {
-                this.operators = response.data.data.map(op => {
-                    return {
-                        value: op.id,
-                        text: op.name
-                    };
-                });
-                this.$refs.table.filters.operator = this.operators[0].value;
+                this.operators = response.data.data;
+                if (!!this.operators)
+                    this.filters.operator = this.operators[0].id;
             }).catch(err => {
                 this.operators = [];
             })
         },
         open(data) {
+            this.toggleLoading();
             this.doctor = data || {
                 operators: []
             };
-            this.dialog = true;
+            if (!!data) {
+                this.request().get(`/doctors/${data.id}`).then(response => {
+                    this.doctor.operators = response.data.data;
+                }).catch(err => {
+                    this.doctor.operators = [];
+                }).finally(() => {
+                    this.toggleLoading();
+                    this.dialog = true;
+                });
+            } else {
+                this.toggleLoading();
+                this.dialog = true;
+            }
         },
         close(data) {
             this.dialog = false;
@@ -173,8 +184,11 @@ export default {
         },
         delete(data) {
             if (window.confirm("Tem certeza que deseja excluir o médico?\nIsso pode causar inconsistências no sistema pois ele pode estar vinculado a uma guia")) {
+                this.toggleLoading();
                 this.request().delete(`/doctors/${data.id}/delete`).then(response => {
                     this.$refs.table.getData();
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             }
         }

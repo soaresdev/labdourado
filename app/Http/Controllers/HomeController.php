@@ -45,7 +45,7 @@ class HomeController extends Controller
         $doctors = Doctor::all(['id'])->count();
         $operators = Operator::all(['id'])->count();
         $lots = Lot::all()->all();
-        $guides = GuideSadt::all()->all();
+        $guides = GuideSadt::with('lot')->get()->all();
         return $this->message->info()->setData([
             'users' => $users,
             'providers' => $providers,

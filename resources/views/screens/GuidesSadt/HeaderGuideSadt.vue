@@ -2,15 +2,15 @@
     <v-container fluid>
         <v-row>
             <v-col cols="12" md="4">
-                <v-text-field label="2 - Nº Guia no Prestador" placeholder="Nº Guia no Prestador"
-                              v-model="provider_number"></v-text-field>
+                <v-text-field label="2 - Nº Guia no Prestador *" placeholder="Nº Guia no Prestador"
+                              v-model="provider_number" required></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
                 <v-text-field label="3 - Nº Guia Principal" placeholder="Nº Guia Principal"
                               v-model="main_number"></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-                <v-text-field type="date" label="4 - Data da Autorização" v-model="permission_date"></v-text-field>
+                <v-text-field type="date" label="4 - Data da Autorização *" v-model="permission_date" required></v-text-field>
             </v-col>
         </v-row>
         <v-row>
@@ -51,7 +51,7 @@ export default {
     },
     methods: {
         verify() {
-            if (this.guide) {
+            if (this.guide.id) {
                 this.provider_number = this.guide.provider_number;
                 this.main_number = this.guide.main_number;
                 this.permission_date = this.guide.permission_date;

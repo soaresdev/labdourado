@@ -1,9 +1,5 @@
 <template>
-    <div>
-        <div class="text-center" v-for="operator in data[name]" :key="operator.doctor_operator.operator_id">
-            <p>{{ operator.name }} - {{ operator.doctor_operator[meta.column] }}</p>
-        </div>
-    </div>
+    <p>{{ !!data[name][0] ? data[name][0].doctor_operator[meta.column] : '' }}</p>
 </template>
 
 <script>
@@ -17,6 +13,6 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 </style>

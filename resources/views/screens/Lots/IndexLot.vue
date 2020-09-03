@@ -7,9 +7,12 @@
             <dialog-lot v-if="dialog" :operators="operators" :lot="lot" @action="close"></dialog-lot>
         </v-dialog>
         <data-table
+            v-if="!!filters.operator"
             :columns="columns"
             :url="url"
             :filters="filters"
+            @loading="toggleLoading"
+            @finished-loading="toggleLoading"
             order-dir="desc"
             ref="table">
             <div slot="filters" slot-scope="{ tableData, perPage }">
@@ -24,14 +27,14 @@
                             name="name"
                             class="form-control"
                             v-model="tableData.search"
-                            placeholder="Pesquisar">
+                            placeholder="Pesquisar pelos campos da tabela">
                     </div>
                     <div class="col-md-2">
                         <select
                             v-model="tableData.filters.operator"
                             class="form-control">
-                            <option v-for="operator in operators" :key="operator.value" :value="operator.value">
-                                {{ operator.text }}
+                            <option v-for="operator in operators" :key="operator.id" :value="operator.id">
+                                {{ operator.name }} - {{ operator.ans }}
                             </option>
                         </select>
                     </div>
@@ -70,6 +73,10 @@ export default {
             url: "/dashboard/api/lots",
             operators: [],
             dialog: false,
+            filters: {
+                operator: '',
+                closed: ''
+            },
             lot: {},
             columns: [
                 {
@@ -87,19 +94,19 @@ export default {
                 {
                     label: 'Qtd. de Guias',
                     name: 'guides_count',
-                    searchable: false,
-                    orderable: false
+                    orderable: true
                 },
                 {
                     label: 'Total do Lote',
                     name: 'total_formatted',
-                    searchable: false,
-                    orderable: false
+                    columnName: 'total',
+                    orderable: true
                 },
                 {
                     label: 'Data de Fechamento',
-                    name: 'closed_at',
-                    searchable: false,
+                    name: 'closed_at_formatted',
+                    columnName: 'closed_at',
+                    orderable: true,
                 },
                 {
                     label: '',
@@ -112,7 +119,7 @@ export default {
                     orderable: false,
                     event: "click",
                     handler: this.open,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
                 {
                     label: '',
@@ -125,13 +132,9 @@ export default {
                     orderable: false,
                     event: "click",
                     handler: this.delete,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
-            ],
-            filters: {
-                operator: '',
-                closed: ''
-            },
+            ]
         }
     },
     created() {
@@ -140,16 +143,12 @@ export default {
     methods: {
         getOperators() {
             this.request().get('/operators/select').then(response => {
-                this.operators = response.data.data.map(op => {
-                    return {
-                        value: op.id,
-                        text: op.name
-                    };
-                });
-                this.$refs.table.filters.operator = this.operators[0].value;
+                this.operators = response.data.data;
+                if (!!this.operators)
+                    this.filters.operator = this.operators[0].id;
             }).catch(err => {
                 this.operators = [];
-            })
+            });
         },
         open(data) {
             this.lot = data;
@@ -161,8 +160,11 @@ export default {
         },
         delete(data) {
             if (window.confirm("Tem certeza que deseja excluir o lote?\nIsso pode causar inconsistências no sistema pois ele pode estar vinculado a uma guia")) {
+                this.toggleLoading();
                 this.request().delete(`/lots/${data.id}/delete`).then(response => {
                     this.$refs.table.getData();
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             }
         }

@@ -6,9 +6,12 @@
             <dialog-patient v-if="dialog" :operators="operators" :patient="patient" @action="close"></dialog-patient>
         </v-dialog>
         <data-table
+            v-if="!!filters.operator"
             :columns="columns"
             :url="url"
             :filters="filters"
+            @loading="toggleLoading"
+            @finished-loading="toggleLoading"
             order-dir="desc"
             ref="table">
             <div slot="filters" slot-scope="{ tableData, perPage }">
@@ -23,14 +26,14 @@
                             name="name"
                             class="form-control"
                             v-model="tableData.search"
-                            placeholder="Pesquisar">
+                            placeholder="Pesquisar pelos campos da tabela">
                     </div>
                     <div class="col-md-4">
                         <select
                             v-model="tableData.filters.operator"
                             class="form-control">
-                            <option v-for="operator in operators" :key="operator.value" :value="operator.value">
-                                {{ operator.text }}
+                            <option v-for="operator in operators" :key="operator.id" :value="operator.id">
+                                {{ operator.name }} - {{ operator.ans }}
                             </option>
                         </select>
                     </div>
@@ -44,7 +47,6 @@
             </div>
         </data-table>
     </div>
-
 </template>
 
 <script>
@@ -62,6 +64,9 @@ export default {
         return {
             url: "/dashboard/api/patients",
             operators: [],
+            filters: {
+                operator: ''
+            },
             dialog: false,
             patient: {},
             columns: [
@@ -69,35 +74,28 @@ export default {
                     label: 'ID',
                     name: 'id',
                     columnName: 'patients.id',
-                    orderable: true,
+                    orderable: true
                 },
                 {
                     label: 'Nome',
                     name: 'name',
                     columnName: 'patients.name',
-                    orderable: true,
+                    orderable: true
                 },
                 {
                     label: 'Nº CNS',
                     name: 'cns',
                     columnName: 'patients.cns',
+                    orderable: false
                 },
                 {
-                    label: 'Nº Carteira',
+                    label: 'Carteiras - Validade',
+                    name: 'operators',
                     meta: {
-                        column: 'wallet_number',
-                        name: 'operators'
+                        name: 'patient_operator',
                     },
                     component: IndexPatientOperator,
-                    orderable: false,
-                },
-                {
-                    label: 'Validade',
-                    meta: {
-                        column: 'wallet_expiration_formatted'
-                    },
-                    component: IndexPatientOperator,
-                    orderable: false,
+                    orderable: false
                 },
                 {
                     label: '',
@@ -110,7 +108,7 @@ export default {
                     orderable: false,
                     event: "click",
                     handler: this.open,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
                 {
                     label: '',
@@ -123,12 +121,9 @@ export default {
                     orderable: false,
                     event: "click",
                     handler: this.delete,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
-            ],
-            filters: {
-                operator: ''
-            },
+            ]
         }
     },
     created() {
@@ -137,22 +132,31 @@ export default {
     methods: {
         getOperators() {
             this.request().get('/operators/select').then(response => {
-                this.operators = response.data.data.map(op => {
-                    return {
-                        value: op.id,
-                        text: op.name
-                    };
-                });
-                this.$refs.table.filters.operator = this.operators[0].value;
+                this.operators = response.data.data;
+                if (!!this.operators)
+                    this.filters.operator = this.operators[0].id;
             }).catch(err => {
                 this.operators = [];
-            })
+            });
         },
         open(data) {
+            this.toggleLoading();
             this.patient = data || {
                 operators: []
             };
-            this.dialog = true;
+            if (!!data) {
+                this.request().get(`/patients/${data.id}`).then(response => {
+                    this.patient.operators = response.data.data;
+                }).catch(err => {
+                    this.patient.operators = [];
+                }).finally(() => {
+                    this.toggleLoading();
+                    this.dialog = true;
+                });
+            } else {
+                this.toggleLoading();
+                this.dialog = true;
+            }
         },
         close() {
             this.dialog = false;
@@ -160,8 +164,11 @@ export default {
         },
         delete(data) {
             if (window.confirm("Tem certeza que deseja excluir o paciente?\nIsso pode causar inconsistências no sistema pois ele pode estar vinculado a uma guia")) {
-                this.request().delete(`/patients/${data.id}/delete`).then(response => {
+                this.toggleLoading();
+                this.request().delete(`/patients/${data.id}/delete`).then(() => {
                     this.$refs.table.getData();
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             }
         }

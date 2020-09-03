@@ -2,13 +2,15 @@
     <div>
         <v-dialog
             v-model="dialog"
-            width="500"
         >
-            <dialog-operator v-if="dialog" :operator="operator" @action="close"></dialog-operator>
+            <dialog-procedure v-if="dialog" :operators="operators" :procedure="procedure"
+                              @action="close"></dialog-procedure>
         </v-dialog>
         <data-table
+            v-if="!!filters.operator"
             :columns="columns"
             :url="url"
+            :filters="filters"
             @loading="toggleLoading"
             @finished-loading="toggleLoading"
             order-dir="desc"
@@ -27,7 +29,16 @@
                             v-model="tableData.search"
                             placeholder="Pesquisar pelos campos da tabela">
                     </div>
-                    <div class="col-md-6 text-right">
+                    <div class="col-md-4">
+                        <select
+                            v-model="tableData.filters.operator"
+                            class="form-control">
+                            <option v-for="operator in operators" :key="operator.id" :value="operator.id">
+                                {{ operator.name }} - {{ operator.ans }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 text-right">
                         <v-btn class="ma-2" small color="success" @click="open(null)">
                             <v-icon left>mdi-plus</v-icon>
                             Novo
@@ -42,33 +53,47 @@
 
 <script>
 import ActionsTable from '../../assets/js/components/ActionsTable'
-import DialogOperator from './DialogOperator'
+import DialogProcedure from './DialogProcedure'
+import IndexProcedureOperator from './IndexProcedureOperator'
 
 export default {
-    name: 'IndexOperator',
+    name: 'IndexProcedure',
     components: {
-        DialogOperator,
+        DialogProcedure,
+        IndexProcedureOperator
     },
     data() {
         return {
-            url: "/dashboard/api/operators",
+            url: "/dashboard/api/procedures",
+            operators: [],
+            filters: {
+                operator: ''
+            },
             dialog: false,
-            operator: {},
+            procedure: {},
             columns: [
                 {
                     label: 'ID',
                     name: 'id',
+                    columnName: 'procedures.id',
                     orderable: true
                 },
                 {
-                    label: 'Nome',
-                    name: 'name',
+                    label: 'Código',
+                    name: 'number',
+                    columnName: 'procedures.number',
                     orderable: true
                 },
                 {
-                    label: 'Registro ANS',
-                    name: 'ans',
-                    orderable: true
+                    label: 'Preço (R$)',
+                    name: 'operators',
+                    columnName: 'procedure_operators.price',
+                    meta: {
+                        column: 'price'
+                    },
+                    component: IndexProcedureOperator,
+                    searchable: true,
+                    orderable: false
                 },
                 {
                     label: '',
@@ -99,19 +124,46 @@ export default {
             ]
         }
     },
+    created() {
+        this.getOperators();
+    },
     methods: {
+        getOperators() {
+            this.request().get('/operators/select').then(response => {
+                this.operators = response.data.data;
+                if (!!this.operators)
+                    this.filters.operator = this.operators[0].id;
+            }).catch(err => {
+                this.operators = [];
+            })
+        },
         open(data) {
-            this.operator = data;
-            this.dialog = true;
+            this.toggleLoading();
+            this.procedure = data || {
+                operators: []
+            };
+            if (!!data) {
+                this.request().get(`/procedures/${data.id}`).then(response => {
+                    this.procedure.operators = response.data.data;
+                }).catch(err => {
+                    this.procedure.operators = [];
+                }).finally(() => {
+                    this.toggleLoading();
+                    this.dialog = true;
+                });
+            } else {
+                this.toggleLoading();
+                this.dialog = true;
+            }
         },
         close() {
             this.dialog = false;
             this.$refs.table.getData();
         },
         delete(data) {
-            if (window.confirm("Tem certeza que deseja excluir a operadora?\nIsso pode causar inconsistências no sistema pois ele pode estar vinculado a uma guia")) {
+            if (window.confirm("Tem certeza que deseja excluir o procedimento?\nIsso pode causar inconsistências no sistema pois ele pode estar vinculado a uma guia")) {
                 this.toggleLoading();
-                this.request().delete(`/operators/${data.id}/delete`).then(response => {
+                this.request().delete(`/procedures/${data.id}/delete`).then(response => {
                     this.$refs.table.getData();
                 }).finally(() => {
                     this.toggleLoading();

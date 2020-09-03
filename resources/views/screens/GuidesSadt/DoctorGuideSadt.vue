@@ -8,7 +8,7 @@
                     :items="doctors_select"
                     filled
                     label="Profissional *"
-                    :item-text="doctors => doctors.name"
+                    :item-text="doctors => `${doctors.name} - ${doctors.doctor_operator.doctor_operator_number}`"
                     :item-value="doctors => doctors"
                     required
                 ></v-autocomplete>
@@ -97,8 +97,9 @@ export default {
         operators() {
             return [
                 {
-                    text: this.operator.name,
-                    value: this.operator.id
+                    id: this.operator.id,
+                    name: this.operator.name,
+                    ans: this.operator.ans,
                 }
             ];
         },
@@ -120,14 +121,19 @@ export default {
     },
     methods: {
         verify() {
-            if (this.guide) {
-                this.doctor = this.guide.doctor;
-                Object.assign(this.doctor, {doctor_operator: this.guide.doctor.operators[0].doctor_operator});
+            if (this.guide.id) {
+                this.doctor = {
+                    ...this.guide.doctor,
+                    doctor_operator: this.guide.doctor.operators[0].doctor_operator
+                };
             }
         },
         save(data) {
             if (data) {
-                this.doctor = data;
+                this.doctor = {
+                    ...data,
+                    doctor_operator: data.operators[0].doctor_operator
+                }
                 this.doctors.push(this.doctor);
             }
             this.dialog = false;

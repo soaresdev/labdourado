@@ -65,15 +65,14 @@ export default {
     methods: {
         verifyAction() {
             if (this.operator) {
-                this.name = this.operator.name,
-                    this.ans = this.operator.ans,
-                    this.action = 'update'
-            } else {
-                this.action = 'store'
+                this.name = this.operator.name;
+                this.ans = this.operator.ans;
+                this.action = 'update';
             }
         },
         salvar() {
             this.errors = [];
+            this.toggleLoading();
             if (this.action === 'store') {
                 this.request().post('/operators/store', {
                     name: this.name,
@@ -84,6 +83,8 @@ export default {
                     if (err.response.data.errors) {
                         this.errors = err.response.data.errors;
                     }
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             } else {
                 this.request().put(`/operators/${this.operator.id}/update`, {
@@ -95,6 +96,8 @@ export default {
                     if (err.response.data.errors) {
                         this.errors = err.response.data.errors;
                     }
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             }
         }

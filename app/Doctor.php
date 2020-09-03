@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Doctor extends Model
 {
     use SoftDeletes;
-    protected $with = ['operators'];
 
     /**
      * The attributes that are mass assignable.
@@ -16,7 +15,11 @@ class Doctor extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'cp', 'advice_number', 'uf', 'cbo'
+        'name',
+        'cp',
+        'advice_number',
+        'uf',
+        'cbo'
     ];
 
     protected $appends = [
@@ -36,7 +39,15 @@ class Doctor extends Model
 
     public function operators()
     {
-        return $this->belongsToMany(Operator::class, 'doctor_operators')->as('doctor_operator')->withPivot('doctor_operator_number');
+        return $this->belongsToMany(Operator::class, 'doctor_operators')
+            ->using(DoctorOperator::class)
+            ->as('doctor_operator')
+            ->withPivot([
+                'doctor_id',
+                'operator_id',
+                'doctor_operator_number'
+            ])
+            ->withTimestamps();
     }
 
     public function getCpFormattedAttribute()
@@ -69,9 +80,8 @@ class Doctor extends Model
             case '09':
                 return 'CRP';
                 break;
-            case '10':
+            default:
                 return 'OUT';
-                break;
         }
     }
 
@@ -159,9 +169,8 @@ class Doctor extends Model
             case '53':
                 return 'DF';
                 break;
-            case '98':
+            default:
                 return 'EX';
-                break;
         }
     }
 }

@@ -8,9 +8,12 @@
                              @action="close"></dialog-provider>
         </v-dialog>
         <data-table
+            v-if="!!filters.operator"
             :columns="columns"
             :url="url"
             :filters="filters"
+            @loading="toggleLoading"
+            @finished-loading="toggleLoading"
             order-dir="desc"
             ref="table">
             <div slot="filters" slot-scope="{ tableData, perPage }">
@@ -25,14 +28,14 @@
                             name="name"
                             class="form-control"
                             v-model="tableData.search"
-                            placeholder="Pesquisar">
+                            placeholder="Pesquisar pelos campos da tabela">
                     </div>
                     <div class="col-md-4">
                         <select
                             v-model="tableData.filters.operator"
                             class="form-control">
-                            <option v-for="operator in operators" :key="operator.value" :value="operator.value">
-                                {{ operator.text }}
+                            <option v-for="operator in operators" :key="operator.id" :value="operator.id">
+                                {{ operator.name }} - {{ operator.ans }}
                             </option>
                         </select>
                     </div>
@@ -46,13 +49,12 @@
             </div>
         </data-table>
     </div>
-
 </template>
 
 <script>
 import ActionsTable from '../../assets/js/components/ActionsTable'
 import DialogProvider from './DialogProvider'
-import IndexProviderOperator from "./IndexProviderOperator"
+import IndexProviderOperator from './IndexProviderOperator'
 
 export default {
     name: 'IndexProvider',
@@ -74,27 +76,29 @@ export default {
                     label: 'ID',
                     name: 'id',
                     columnName: 'providers.id',
-                    orderable: true,
+                    orderable: true
                 },
                 {
                     label: 'Nome',
                     name: 'name',
                     columnName: 'providers.name',
-                    orderable: true,
+                    orderable: true
                 },
                 {
                     label: 'CNES',
                     name: 'cnes',
-                    orderable: false,
+                    columnName: 'providers.cnes',
+                    orderable: true
                 },
                 {
                     label: 'Cód. na Operadora',
                     name: 'operators',
+                    columnName: 'provider_operators.provider_operator_number',
                     meta: {
                         column: 'provider_operator_number'
                     },
                     component: IndexProviderOperator,
-                    orderable: false,
+                    orderable: true
                 },
                 {
                     label: '',
@@ -107,7 +111,7 @@ export default {
                     searchable: false,
                     event: "click",
                     handler: this.open,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
                 {
                     label: '',
@@ -121,7 +125,7 @@ export default {
                     searchable: false,
                     event: "click",
                     handler: this.delete,
-                    component: ActionsTable,
+                    component: ActionsTable
                 },
             ]
         }
@@ -132,31 +136,43 @@ export default {
     methods: {
         getOperators() {
             this.request().get('/operators/select').then(response => {
-                this.operators = response.data.data.map(op => {
-                    return {
-                        value: op.id,
-                        text: op.name
-                    };
-                });
-                this.$refs.table.filters.operator = this.operators[0].value;
+                this.operators = response.data.data;
+                if (!!this.operators)
+                    this.filters.operator = this.operators[0].id;
             }).catch(err => {
                 this.operators = [];
-            })
+            });
         },
         open(data) {
+            this.toggleLoading();
             this.provider = data || {
                 operators: []
             };
-            this.dialog = true;
+            if (!!data) {
+                this.request().get(`/providers/${data.id}`).then(response => {
+                    this.provider.operators = response.data.data;
+                }).catch(err => {
+                    this.provider.operators = [];
+                }).finally(() => {
+                    this.toggleLoading();
+                    this.dialog = true;
+                });
+            } else {
+                this.toggleLoading();
+                this.dialog = true;
+            }
         },
-        close(data) {
+        close() {
             this.dialog = false;
             this.$refs.table.getData();
         },
         delete(data) {
             if (window.confirm("Tem certeza que deseja excluir o prestador?\nIsso pode causar inconsistências no sistema pois ele pode estar vinculado a uma guia")) {
-                this.request().delete(`/providers/${data.id}/delete`).then(response => {
+                this.toggleLoading();
+                this.request().delete(`/providers/${data.id}/delete`).then(() => {
                     this.$refs.table.getData();
+                }).finally(() => {
+                    this.toggleLoading();
                 });
             }
         }

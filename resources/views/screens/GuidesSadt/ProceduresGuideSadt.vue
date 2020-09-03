@@ -1,47 +1,34 @@
 <template>
     <v-container fluid>
-        <v-row>
-            <v-col class="d-flex" cols="12" md="6">
-                <v-autocomplete
-                    v-model="procedure"
-                    :items="procedures"
-                    filled
-                    dense
-                    label="Procedimento *"
-                    :item-text="procedures => `${procedures.number} - ${procedures.description}`"
-                    :item-value="procedures => procedures"
-                    required
-                ></v-autocomplete>
-            </v-col>
-            <v-col cols="12" md="2" v-if="procedures.length > 0 && procedure">
-                <v-text-field type="number" label="27 - Qtde. Solic" placeholder="Qtde. Solic."
-                              v-model="request_amount"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="2" v-if="procedures.length > 0 && procedure">
-                <v-text-field type="number" label="27 - Qtde. Aut." placeholder="Qtde. Aut"
-                              v-model="permission_amount"></v-text-field>
-            </v-col>
-            <v-col cols="12" md="2" v-if="procedures.length > 0 && procedure">
-                <v-btn color="primary" @click="addProcedure">Incluir</v-btn>
-            </v-col>
+        <v-row align="center" justify="center">
+            <v-btn color="primary" @click="dialog = true">Vincular procedimentos</v-btn>
         </v-row>
         <v-simple-table>
             <template v-slot:default>
                 <thead>
                 <tr>
-                    <th class="text-left">Cód. do Procedimento</th>
-                    <th class="text-left">Descrição</th>
-                    <th class="text-left">Qtde. Solic.</th>
-                    <th class="text-left">Qtde. Aut.</th>
+                    <th class="text-left">Cód.</th>
+                    <th class="text-left">Preço Un.</th>
+                    <th class="text-left">Qtd. Solic.</th>
+                    <th class="text-left">Qtd. Aut.</th>
+                    <th class="text-left">Total</th>
+                    <th class="text-left">Editar</th>
                     <th class="text-left">Excluir</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr v-for="item in guide_procedures" :key="item.guide_procedure.procedure_id">
                     <td>{{ item.number }}</td>
-                    <td>{{ item.description.substring(60, 0) }}</td>
+                    <td>{{ convertToString(item.guide_procedure.unity_price) }}</td>
                     <td>{{ item.guide_procedure.request_amount }}</td>
                     <td>{{ item.guide_procedure.permission_amount }}</td>
+                    <td>{{
+                            convertToString(item.guide_procedure.permission_amount * item.guide_procedure.unity_price)
+                        }}
+                    </td>
+                    <td>
+                        <v-icon @click="open(item)">mdi-pencil</v-icon>
+                    </td>
                     <td>
                         <v-icon @click="remove(item)">mdi-delete</v-icon>
                     </td>
@@ -49,63 +36,86 @@
                 </tbody>
             </template>
         </v-simple-table>
+        <v-dialog
+            v-model="dialog"
+            width="800"
+        >
+            <dialog-procedure-guide v-if="dialog" :procedures="procedures" :procedures_guide="guide_procedures"
+                                    :guide_procedure="guide_procedure" @action="save"></dialog-procedure-guide>
+        </v-dialog>
     </v-container>
 </template>
 
 <script>
+import DialogProcedureGuide from "./DialogProcedureGuide"
+
 export default {
     name: "procedures-guide-sadt",
     props: {
         guide: {
             type: Object
         },
+        procedures: {
+            type: Array,
+            default: () => ([])
+        }
+    },
+    components: {
+        DialogProcedureGuide
     },
     data() {
         return {
-            procedures: [],
+            dialog: false,
             procedure: null,
             request_amount: '',
             permission_amount: '',
             execution_date: '',
             unity_price: '',
-            total_price: '',
-            guide_procedures: []
+            guide_procedure: null
         }
     },
-    created() {
-        this.getProcedures();
-        this.verify();
+    computed: {
+        guide_procedures() {
+            this.$parent.$refs.treatment.total = this.guide.procedures.reduce((accumulator, procedure) => accumulator + (procedure.guide_procedure.permission_amount * procedure.guide_procedure.unity_price), 0);
+            return this.guide.procedures;
+        }
     },
     methods: {
-        verify() {
-            if (this.guide && this.guide.procedures.length > 0) {
-                this.guide_procedures = this.guide.procedures;
+        save(data) {
+            if (data) {
+                if (data.action === 'store') {
+                    this.guide.procedures.push({
+                        ...data.procedure,
+                        guide_procedure: {
+                            guide_id: this.guide.id,
+                            procedure_id: data.procedure.id,
+                            execution_date: data.execution_date,
+                            request_amount: data.request_amount,
+                            permission_amount: data.permission_amount,
+                            unity_price: data.unity_price
+                        }
+                    })
+                } else {
+                    this.guide.procedures.map(pr => {
+                        if (pr.guide_procedure.procedure_id === data.procedure.id) {
+                            pr.guide_procedure.execution_date = data.execution_date;
+                            pr.guide_procedure.request_amount = data.request_amount;
+                            pr.guide_procedure.permission_amount = data.permission_amount;
+                            pr.guide_procedure.unity_price = data.unity_price;
+
+                        }
+                        return pr;
+                    })
+                    this.dialog = false;
+                }
+            } else {
+                this.dialog = false;
             }
+            this.guide_procedure = null;
         },
-        getProcedures() {
-            this.request().get('/procedures').then(response => {
-                this.procedures = response.data.data;
-            }).catch(err => {
-                console.log(err);
-                this.procedures = [];
-                this.procedure = null;
-            })
-        },
-        addProcedure() {
-            if (this.procedure && this.request_amount && this.permission_amount && Number(this.permission_amount) <= Number(this.request_amount)) {
-                this.guide_procedures.push({
-                    number: this.procedure.number,
-                    description: this.procedure.description,
-                    guide_procedure: {
-                        procedure_id: this.procedure.id,
-                        request_amount: this.request_amount,
-                        permission_amount: this.permission_amount
-                    }
-                });
-                this.procedure = null;
-                this.request_amount = '';
-                this.permission_amount = '';
-            }
+        open(data) {
+            this.guide_procedure = data;
+            this.dialog = true;
         },
         remove(data) {
             this.guide_procedures.splice(this.guide_procedures.findIndex(guide_pc => guide_pc.guide_procedure.procedure_id === data.guide_procedure.procedure_id), 1);
