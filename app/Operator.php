@@ -29,6 +29,19 @@ class Operator extends Model
         'updated_at' => 'datetime:d/m/Y',
     ];
 
+    protected $appends = [
+        'qtd_guides'
+    ];
+
+    public function getQtdGuidesAttribute()
+    {
+        $qtdGuides = 0;
+        foreach ($this->lots as $lot) {
+            $qtdGuides += $lot->guides_count;
+        }
+        return $qtdGuides;
+    }
+
     public function lots()
     {
         return $this->hasMany(Lot::class);

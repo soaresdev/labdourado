@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Lot;
 use App\Operator;
+use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -187,6 +188,16 @@ class LotController extends Controller
                 ])->getResponse();
             }
         }
+    }
+
+    public function export()
+    {
+        $data = Lot::with('operator:id,name,ans')->get();
+        $moment = Carbon::createFromFormat('Y-m-d H:i:s', now())->format('dmYHis');
+        $filename = "lotes_$moment.pdf";
+        view()->share('lots', $data);
+        $pdf = SnappyPdf::loadView('exports.lots', $data);
+        return $pdf->download($filename);
     }
 
     public function xml(Request $request, int $id)

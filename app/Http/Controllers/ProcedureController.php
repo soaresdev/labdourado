@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Operator;
 use App\Procedure;
+use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use JamesDordoy\LaravelVueDatatable\Http\Resources\DataTableCollectionResource;

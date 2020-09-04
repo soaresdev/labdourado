@@ -27,7 +27,13 @@
                             v-model="tableData.search"
                             placeholder="Pesquisar pelos campos da tabela">
                     </div>
-                    <div class="col-md-6 text-right">
+                    <div class="col-md-2 text-right">
+                        <v-btn class="ma-2 text-decoration-none" small color="info" href="/dashboard/api/export/operators">
+                            <v-icon left>mdi-pdf-box</v-icon>
+                            Exportar
+                        </v-btn>
+                    </div>
+                    <div class="col-md-2 text-right">
                         <v-btn class="ma-2" small color="success" @click="open(null)">
                             <v-icon left>mdi-plus</v-icon>
                             Novo

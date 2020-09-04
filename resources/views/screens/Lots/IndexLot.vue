@@ -17,7 +17,7 @@
             ref="table">
             <div slot="filters" slot-scope="{ tableData, perPage }">
                 <div class="row mb-2 justify-content-between align-items-center">
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <select class="form-control" v-model="tableData.length">
                             <option :key="page" v-for="page in perPage">{{ page }}</option>
                         </select>
@@ -46,6 +46,12 @@
                             <option value="1">Fechado</option>
                             <option value="0">Aberto</option>
                         </select>
+                    </div>
+                    <div class="col-md-2 text-right">
+                        <v-btn class="ma-2 text-decoration-none" small color="info" href="/dashboard/api/export/lots">
+                            <v-icon left>mdi-pdf-box</v-icon>
+                            Exportar
+                        </v-btn>
                     </div>
                     <div class="col-md-2 text-right">
                         <v-btn class="ma-2" small color="success" @click="open(null)">

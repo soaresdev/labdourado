@@ -94,7 +94,7 @@ export default {
                     name: this.procedure_operator.name,
                     ans: this.procedure_operator.ans
                 };
-                this.price = this.convertToPrice(this.procedure_operator.procedure_operator.price);
+                this.price = this.procedure_operator.procedure_operator.price;
             }
         },
         salvar() {

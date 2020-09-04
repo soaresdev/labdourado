@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Operator;
 use App\Patient;
+use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 use JamesDordoy\LaravelVueDatatable\Http\Resources\DataTableCollectionResource;
 
@@ -136,6 +138,16 @@ class PatientController extends Controller
                 ])->getResponse();
             }
         }
+    }
+
+    public function export()
+    {
+        $data = Patient::with('operators:id,name,ans')->get();
+        $moment = Carbon::createFromFormat('Y-m-d H:i:s', now())->format('dmYHis');
+        $filename = "pacientes_$moment.pdf";
+        view()->share('patients', $data);
+        $pdf = SnappyPdf::loadView('exports.patients', $data);
+        return $pdf->download($filename);
     }
 
     protected function requestOperators($requestOperators)

@@ -30,7 +30,7 @@
                             v-model="tableData.search"
                             placeholder="Pesquisar pelos campos da tabela">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <select
                             v-model="tableData.filters.operator"
                             class="form-control">
@@ -38,6 +38,12 @@
                                 {{ operator.name }} - {{ operator.ans }}
                             </option>
                         </select>
+                    </div>
+                    <div class="col-md-2 text-right">
+                        <v-btn class="ma-2 text-decoration-none" small color="info" href="/dashboard/api/export/providers">
+                            <v-icon left>mdi-pdf-box</v-icon>
+                            Exportar
+                        </v-btn>
                     </div>
                     <div class="col-md-2 text-right">
                         <v-btn class="ma-2" small color="success" @click="open(null)">

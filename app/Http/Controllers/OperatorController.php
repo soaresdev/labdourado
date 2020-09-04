@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Operator;
+use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 use JamesDordoy\LaravelVueDatatable\Http\Resources\DataTableCollectionResource;
 
@@ -109,5 +111,21 @@ class OperatorController extends Controller
                 ])->getResponse();
             }
         }
+    }
+
+    public function export()
+    {
+        $data = Operator::with('lots')->withCount([
+            'lots',
+            'doctors',
+            'providers',
+            'patients',
+            'procedures'
+        ])->get();
+        $moment = Carbon::createFromFormat('Y-m-d H:i:s', now())->format('dmYHis');
+        $filename = "operadoras_$moment.pdf";
+        view()->share('operators', $data);
+        $pdf = SnappyPdf::loadView('exports.operators', $data);
+        return $pdf->download($filename);
     }
 }

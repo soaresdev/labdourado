@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Operator;
 use App\Provider;
+use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use JamesDordoy\LaravelVueDatatable\Http\Resources\DataTableCollectionResource;
 
 class ProviderController extends Controller
@@ -143,6 +144,16 @@ class ProviderController extends Controller
                 ])->getResponse();
             }
         }
+    }
+
+    public function export()
+    {
+        $data = Provider::with('operators:id,name,ans')->get();
+        $moment = Carbon::createFromFormat('Y-m-d H:i:s', now())->format('dmYHis');
+        $filename = "prestadores_$moment.pdf";
+        view()->share('providers', $data);
+        $pdf = SnappyPdf::loadView('exports.providers', $data);
+        return $pdf->download($filename);
     }
 
     protected function requestOperators($requestOperators)

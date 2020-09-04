@@ -21,6 +21,13 @@ Route::post('/logout', 'AuthController@logout')->name('logout');
 Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(function () {
     /** Dashboard Home */
     Route::prefix('api')->group(function () {
+        Route::prefix('export')->group(function () {
+            Route::get('/providers', 'ProviderController@export')->name('providers.export');
+            Route::get('/patients', 'PatientController@export')->name('patients.export');
+            Route::get('/doctors', 'DoctorController@export')->name('doctors.export');
+            Route::get('/operators', 'OperatorController@export')->name('operators.export');
+            Route::get('/lots', 'LotController@export')->name('lots.export');
+        });
         Route::prefix('/users')->group(function () {
             Route::get('/', 'UserController@index')->name('users.index');
             Route::middleware('db.transaction')->group(function () {
@@ -32,7 +39,6 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
         Route::prefix('/providers')->group(function () {
             Route::get('/', 'ProviderController@index')->name('providers.index');
             Route::get('/{id}', 'ProviderController@show')->name('providers.show');
-            Route::get('/select', 'ProviderController@indexData')->name('providers.indexData');
             Route::middleware('db.transaction')->group(function () {
                 Route::post('/store', 'ProviderController@store')->name('providers.store');
                 Route::put('/{id}/update', 'ProviderController@update')->name('providers.update');
