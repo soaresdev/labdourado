@@ -200,6 +200,30 @@ class LotController extends Controller
         return $pdf->download($filename);
     }
 
+    public function exportCapa($id)
+    {
+        try {
+            $lot = Lot::with([
+                'guides.patient',
+                'guides.procedures'
+            ])->findOrFail($id)->whereNotNull('closed_at')->first();
+            $moment = Carbon::createFromFormat('Y-m-d H:i:s', now())->format('dmYHis');
+            $pdf = SnappyPdf::loadView('exports.capa', [
+                'lot' => $lot
+            ])->setPaper('a4');
+            $filename = 'capa_lote' . $lot->number . $moment . '.pdf';
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            if ($e instanceof ModelNotFoundException) {
+                return $this->message->error('Lote não encontrado! Tem certeza que fechou o lote?')->getResponse();
+            } else {
+                return $this->message->error()->setErrors([
+                    $e->getMessage()
+                ])->getResponse();
+            }
+        }
+    }
+
     public function xml(Request $request, int $id)
     {
         try {

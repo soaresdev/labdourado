@@ -7,11 +7,11 @@ use Illuminate\Http\JsonResponse;
 
 class Message
 {
-    private string $text = 'Ação executada com sucesso!';
-    private string $type = 'success';
-    private array $data = [];
-    private array $errors = [];
-    private int $status = 200;
+    private $text = 'Ação executada com sucesso!';
+    private $type = 'success';
+    private $data = [];
+    private $errors = [];
+    private $status = 200;
 
     public function getText()
     {
