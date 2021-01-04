@@ -206,7 +206,7 @@ class LotController extends Controller
             $lot = Lot::with([
                 'guides.patient',
                 'guides.procedures'
-            ])->whereNotNull('closed_at')->where('id', $id)->first();
+            ])->findOrFail($id);
             $moment = Carbon::createFromFormat('Y-m-d H:i:s', now())->format('dmYHis');
             $pdf = SnappyPdf::loadView('exports.capa', [
                 'lot' => $lot
