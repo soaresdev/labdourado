@@ -40,7 +40,7 @@
                 <td>{{ $guide->patient->name }}</td>
                 <td>{{ $guide->provider_number }}</td>
                 <td>{{ $guide->password }}</td>
-                <td>{{ $guide->procedures->first()->guide_procedure->execution_date_formatted }}</td>
+                <td>{{ !empty($guide->procedures->first()) ? $guide->procedures->first()->guide_procedure->execution_date_formatted : '-' }}</td>
                 <td>{{ $guide->procedures->count() }}</td>
                 <td>{{ $guide->total_formatted }}</td>
             </tr>
