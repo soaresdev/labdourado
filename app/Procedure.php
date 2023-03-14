@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Procedure extends Model
 {
@@ -18,6 +19,10 @@ class Procedure extends Model
         'table',
         'number',
         'description'
+    ];
+
+    protected $appends = [
+        'wrapped'
     ];
 
     /**
@@ -57,5 +62,9 @@ class Procedure extends Model
                 'price'
             ])
             ->withTimestamps();
+    }
+
+    public function getWrappedAttribute() {
+        return $this->number . ' - ' . Str::words($this->description, 4, '...');
     }
 }

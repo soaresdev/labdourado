@@ -72,6 +72,18 @@
               </v-btn>
             </v-col>
           </v-row>
+          <v-row v-if="this.lot">
+            <v-col cols="12" md="4">
+              <v-btn
+                :disabled="!!lot_selected && !lot_selected.closed_at"
+                class="ma-2 text-decoration-none"
+                small
+                color="info"
+                :href="'/dashboard/api/export/lots/' + lot_selected.id + '/procedures'"
+                >Gerar Capa de Procedimentos
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-container>
       </v-card-text>
 

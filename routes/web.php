@@ -28,6 +28,7 @@ Route::prefix(config('constants.dashboard.path'))->middleware('auth')->group(fun
             Route::get('/operators', 'OperatorController@export')->name('operators.export');
             Route::get('/lots', 'LotController@export')->name('lots.export');
             Route::get('/lots/{id}', 'LotController@exportCapa')->name('lots.capa');
+            Route::get('/lots/{id}/procedures', 'LotController@exportProcedures')->name('lots.procedures');
         });
         Route::prefix('/users')->group(function () {
             Route::get('/', 'UserController@index')->name('users.index');
