@@ -65,6 +65,7 @@ class Procedure extends Model
     }
 
     public function getWrappedAttribute() {
-        return $this->number . ' - ' . Str::words($this->description, 4, '...');
+        // return $this->number . ' - ' . Str::words($this->description, 4, '...');
+        return $this->number . ' - ' . $this->description;
     }
 }
