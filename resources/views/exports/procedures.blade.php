@@ -41,7 +41,8 @@
                     <td>{{ $procedure->wrapped }}</td>
                     <td>{{ $guide->provider_number }}</td>
                     <td>{{ $procedure->guide_procedure->execution_date_formatted }}</td>
-                    <td>{{ $procedure->guide_procedure->unity_price }}</td>
+                    <td>{{ $procedure->guide_procedure->request_amount }} | {{ $procedure->guide_procedure->permission_amount }}</td>
+                    <td>{{ $procedure->guide_procedure->unity_price_formatted }}</td>
                     <td>{{ $guide->total_formatted }}</td>
                 </tr>
             @endforeach
