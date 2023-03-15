@@ -29,7 +29,7 @@
             <th scope="col">Procedimento</th>
             <th scope="col">Guia</th>
             <th scope="col">Data de Realização</th>
-            <th scope="col">Qtd. Solic. | Qtd. Aut.</th>
+            <th scope="col">Qtd</th>
             <th scope="col">Valor Unitário</th>
             <th scope="col">Valor Total</th>
         </tr>
@@ -41,9 +41,9 @@
                     <td>{{ $procedure->wrapped }}</td>
                     <td>{{ $guide->provider_number }}</td>
                     <td>{{ $procedure->guide_procedure->execution_date_formatted }}</td>
-                    <td>{{ $procedure->guide_procedure->request_amount }} | {{ $procedure->guide_procedure->permission_amount }}</td>
+                    <td>{{ $procedure->guide_procedure->permission_amount }}</td>
                     <td>{{ $procedure->guide_procedure->unity_price_formatted }}</td>
-                    <td>{{ $guide->total_formatted }}</td>
+                    <td>{{ $procedure->guide_procedure->total_formatted }}</td>
                 </tr>
             @endforeach
         @endforeach
